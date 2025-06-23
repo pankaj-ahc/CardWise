@@ -81,9 +81,9 @@ export function AppSidebar() {
             <AvatarImage src={user?.photoURL ?? "https://placehold.co/40x40.png"} alt={user?.displayName ?? "User"} data-ai-hint="user avatar" />
             <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col text-sm">
-            <span className="font-semibold">{user?.displayName ?? 'User'}</span>
-            <span className="text-muted-foreground">{user?.email ?? 'user@email.com'}</span>
+          <div className="flex flex-col text-sm min-w-0">
+            <span className="font-semibold truncate">{user?.displayName ?? 'User'}</span>
+            <span className="text-muted-foreground truncate">{user?.email ?? 'user@email.com'}</span>
           </div>
           <Button variant="ghost" size="icon" aria-label="Log out" onClick={handleLogout} className="ml-auto">
               <LogOut />
