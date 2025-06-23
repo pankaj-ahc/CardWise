@@ -31,11 +31,13 @@ export default function BillsPage() {
   }
 
   const handleSaveBill = (data: BillFormValues & { id?: string }) => {
-    const { cardId, ...billData } = data;
+    const { id, cardId } = data;
     if (!cardId) return;
-
-    if (data.id) {
-      updateBill(cardId, data.id, billData);
+  
+    const { id: _id, ...billData } = data;
+  
+    if (id) {
+      updateBill(cardId, id, billData);
     } else {
       addBill(cardId, billData);
     }

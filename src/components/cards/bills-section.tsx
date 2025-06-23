@@ -35,10 +35,11 @@ export function BillsSection({ cardId, bills }: BillsSectionProps) {
     const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
 
     const handleSaveBill = (data: BillFormValues & { id?: string }) => {
-        if (data.id) {
-            updateBill(cardId, data.id, data);
+        const { id, ...billData } = data;
+        if (id) {
+            updateBill(cardId, id, billData);
         } else {
-            addBill(cardId, data);
+            addBill(cardId, billData);
         }
         setEditingBill(undefined);
         setIsDialogOpen(false);

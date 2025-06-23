@@ -34,10 +34,11 @@ export function SpendTrackerSection({ cardId, trackers }: SpendTrackerSectionPro
     const [deletingTrackerId, setDeletingTrackerId] = useState<string | null>(null);
 
     const handleSaveTracker = (data: SpendTrackerFormValues & { id?: string }) => {
-        if (data.id) {
-            updateSpendTracker(cardId, data.id, data);
+        const { id, ...trackerData } = data;
+        if (id) {
+            updateSpendTracker(cardId, id, trackerData);
         } else {
-            addSpendTracker(cardId, data);
+            addSpendTracker(cardId, trackerData);
         }
         setEditingTracker(undefined);
         setIsDialogOpen(false);
