@@ -168,6 +168,13 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                                 <p className="text-xs font-medium text-muted-foreground mb-1 truncate">{tracker.name}</p>
                                 <div className="relative">
                                     <Progress value={progressValue} className={cn("h-5", isCompleted && "[&>div]:bg-green-500")} />
+                                    {!isCompleted && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <span className="text-[10px] font-bold text-primary-foreground px-1 truncate">
+                                                {currency}{currentSpend.toLocaleString('en-US', { maximumFractionDigits: 0 })} / {currency}{tracker.targetAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )
