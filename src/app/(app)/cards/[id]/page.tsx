@@ -29,7 +29,7 @@ export default function CardDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { getCard, updateCard, deleteCard, cards } = useCards();
 
-  const [card, setCard] = useState(() => getCard(params.id));
+  const [card, setCard] = useState<CardData | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
