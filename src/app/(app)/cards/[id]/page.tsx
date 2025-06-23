@@ -1,20 +1,61 @@
-import { DUMMY_CARDS } from '@/lib/data';
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CreditCard, Edit } from 'lucide-react';
+import { ArrowLeft, CreditCard, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BillsSection } from '@/components/cards/bills-section';
 import { SpendTrackerSection } from '@/components/cards/spend-tracker-section';
+import { AddEditCardDialog, type CardFormValues } from '@/components/cards/add-edit-card-dialog';
+import { type CardData } from '@/lib/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useCards } from '@/contexts/card-context';
 
 export default function CardDetailPage({ params }: { params: { id: string } }) {
-  const card = DUMMY_CARDS.find((c) => c.id === params.id);
+  const router = useRouter();
+  const { getCard, updateCard, deleteCard, cards } = useCards();
+
+  const [card, setCard] = useState(() => getCard(params.id));
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const foundCard = getCard(params.id);
+    if (!foundCard) {
+      router.replace('/cards');
+    } else {
+      setCard(foundCard);
+    }
+  }, [params.id, cards, getCard, router]);
 
   if (!card) {
-    notFound();
+    return <div className="flex-1 p-8">Loading card details...</div>;
   }
+
+  const handleSaveCard = (data: CardFormValues & { id?: string }) => {
+    if (data.id) {
+      updateCard(data.id, data);
+    }
+    setIsEditDialogOpen(false);
+  };
+  
+  const handleDeleteCard = () => {
+    deleteCard(card.id);
+    router.push('/cards');
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -28,10 +69,31 @@ export default function CardDetailPage({ params }: { params: { id: string } }) {
                 </Button>
             </div>
             <div className="flex items-center space-x-2">
-                <Button size="sm">
+                <Button size="sm" onClick={() => setIsEditDialogOpen(true)}>
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Card
                 </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Card
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete this
+                        card and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteCard} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
       
@@ -67,6 +129,12 @@ export default function CardDetailPage({ params }: { params: { id: string } }) {
             </TabsContent>
         </Tabs>
 
+        <AddEditCardDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            onSave={handleSaveCard}
+            card={card}
+        />
     </div>
   );
 }

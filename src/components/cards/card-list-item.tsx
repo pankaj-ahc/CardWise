@@ -8,12 +8,26 @@ import { Badge } from '@/components/ui/badge';
 import { MoreVertical, Edit, Trash2, CreditCard } from 'lucide-react';
 import { type CardData } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import React from 'react';
 
 interface CardListItemProps {
   card: CardData;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-export function CardListItem({ card }: CardListItemProps) {
+export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
     const nextBill = card.bills.find(b => !b.paid);
     const mainTracker = card.spendTrackers[0];
 
@@ -27,23 +41,43 @@ export function CardListItem({ card }: CardListItemProps) {
                 <CardTitle className="font-headline">{card.cardName}</CardTitle>
                 <CardDescription>{card.bankName} •••• {card.last4Digits}</CardDescription>
             </div>
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+             <AlertDialog>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={onEdit}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                        </DropdownMenuItem>
+                        <AlertDialogTrigger asChild>
+                            <DropdownMenuItem 
+                                onSelect={(e) => e.preventDefault()} 
+                                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your
+                        card and all associated data.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </CardHeader>
       <CardContent className="flex-grow">
         <div className="space-y-4">

@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { CardProvider } from '@/contexts/card-context';
 
 export default function AppLayout({
   children,
@@ -7,13 +8,15 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="min-h-screen">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <CardProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="min-h-screen">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </CardProvider>
   );
 }
