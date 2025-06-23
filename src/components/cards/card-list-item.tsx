@@ -93,7 +93,7 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
             </div>
             <div className="flex-grow">
                 <CardTitle className="font-headline">{card.cardName}</CardTitle>
-                <CardDescription>{card.bankName} •••• {card.last4Digits}</CardDescription>
+                <CardDescription>{card.bankName} {card.last4Digits && `•••• ${card.last4Digits}`}</CardDescription>
             </div>
              <AlertDialog>
                 <DropdownMenu>

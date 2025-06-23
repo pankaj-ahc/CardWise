@@ -22,7 +22,7 @@ export type CardVariant = typeof CARD_VARIANTS[number];
 export interface CardData {
   id: string;
   cardName: string;
-  last4Digits: string;
+  last4Digits?: string;
   bankName: string;
   cardVariant: CardVariant;
   dueDate: number; // Day of the month
@@ -33,4 +33,5 @@ export interface CardData {
   bills: Bill[];
   spendTrackers: SpendTracker[];
   color: string;
+  extraInfo?: string;
 }

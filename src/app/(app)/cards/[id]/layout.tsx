@@ -129,10 +129,13 @@ export default function CardDetailLayout({
                 </div>
                 <div className="flex-grow">
                     <CardTitle className="text-2xl font-headline">{card.cardName}</CardTitle>
-                    <CardDescription>{card.bankName} •••• {card.last4Digits}</CardDescription>
+                    <CardDescription>{card.bankName} {card.last4Digits && `•••• ${card.last4Digits}`}</CardDescription>
                      <div className="mt-2 flex flex-wrap gap-2">
                         {card.perks.map(perk => <Badge key={perk} variant="secondary">{perk}</Badge>)}
                     </div>
+                    {card.extraInfo && (
+                        <p className="text-sm text-muted-foreground mt-2">{card.extraInfo}</p>
+                    )}
                 </div>
                 <div className="text-right">
                     <p className="text-sm text-muted-foreground">Annual Fee</p>

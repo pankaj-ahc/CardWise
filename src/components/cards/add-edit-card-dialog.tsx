@@ -28,6 +28,7 @@ import { useSettings } from '@/contexts/settings-context';
 import { Combobox } from '@/components/ui/combobox';
 import { popularBanks } from '@/lib/banks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 // Simplified SVG components for logos
 const VisaLogo: FC<SVGProps<SVGSVGElement>> = (props) => (
@@ -95,11 +96,11 @@ export const cardVariantList: readonly CardVariantInfo[] = [
 const cardFormSchema = z.object({
   cardName: z.string().min(2, { message: 'Card name must be at least 2 characters.' }),
   bankName: z.string().min(2, { message: 'Bank name must be at least 2 characters.' }),
-  last4Digits: z.string().length(4, { message: 'Must be 4 digits.' }).regex(/^\d{4}$/, { message: "Must be 4 digits." }),
+  last4Digits: z.string().optional(),
   cardVariant: z.enum(CARD_VARIANTS),
   dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
   annualFee: z.coerce.number().min(0),
-  color: z.string().regex(/^hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\)$/, { message: "Must be a valid HSL color string, e.g., hsl(217, 89%, 61%)" }).optional(),
+  extraInfo: z.string().optional(),
 });
 
 export type CardFormValues = z.infer<typeof cardFormSchema>;
@@ -122,7 +123,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       cardVariant: 'Other',
       dueDate: 1,
       annualFee: 0,
-      color: 'hsl(217, 89%, 61%)',
+      extraInfo: '',
     },
   });
 
@@ -132,11 +133,11 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
         form.reset({
           cardName: card.cardName,
           bankName: card.bankName,
-          last4Digits: card.last4Digits,
+          last4Digits: card.last4Digits || '',
           cardVariant: card.cardVariant || 'Other',
           dueDate: card.dueDate,
           annualFee: card.annualFee,
-          color: card.color,
+          extraInfo: card.extraInfo || '',
         });
       } else {
         form.reset({
@@ -146,7 +147,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           cardVariant: 'Other',
           dueDate: 1,
           annualFee: 0,
-          color: 'hsl(217, 89%, 61%)',
+          extraInfo: '',
         });
       }
     }
@@ -231,7 +232,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                 name="last4Digits"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last 4 Digits</FormLabel>
+                    <FormLabel>Last 4 Digits (Optional)</FormLabel>
                     <FormControl>
                       <Input placeholder="1234" {...field} />
                     </FormControl>
@@ -288,6 +289,19 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                   <FormLabel>Annual Fee ({currency})</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="extraInfo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Extra Info (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g. For travel expenses only" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
