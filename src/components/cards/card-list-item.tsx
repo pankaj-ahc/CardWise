@@ -161,18 +161,13 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                             .reduce((sum, bill) => sum + bill.amount, 0);
 
                         const progressValue = tracker.targetAmount > 0 ? (currentSpend / tracker.targetAmount) * 100 : 0;
-                        const remainingAmount = Math.max(0, tracker.targetAmount - currentSpend);
+                        const isCompleted = progressValue >= 100;
                         
                         return (
                             <div key={tracker.id}>
                                 <p className="text-xs font-medium text-muted-foreground mb-1 truncate">{tracker.name}</p>
                                 <div className="relative">
-                                    <Progress value={progressValue} className="h-5" />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-xs font-bold text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.6)]">
-                                            {currency}{remainingAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} remaining
-                                        </span>
-                                    </div>
+                                    <Progress value={progressValue} className={cn("h-5", isCompleted && "[&>div]:bg-green-500")} />
                                 </div>
                             </div>
                         )

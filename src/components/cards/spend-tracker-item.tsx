@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -19,6 +20,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Edit, MoreHorizontal, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths, addYears, startOfDay, addDays, getQuarter } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
+import { cn } from '@/lib/utils';
 
 interface SpendTrackerItemProps {
     tracker: SpendTracker;
@@ -104,6 +106,7 @@ export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrac
     const handleNext = () => setViewedPeriodStart(getAdjacentPeriodStart(viewedPeriodStart, tracker.type, 'next'));
 
     const progressValue = tracker.targetAmount > 0 ? (currentSpend / tracker.targetAmount) * 100 : 0;
+    const isCompleted = progressValue >= 100;
 
     return (
         <div className="group relative border-t pt-6">
@@ -172,7 +175,7 @@ export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrac
                     {currency}{currentSpend.toLocaleString('en-US', { minimumFractionDigits: 2 })} / {currency}{tracker.targetAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
             </div>
-            <Progress value={progressValue} />
+            <Progress value={progressValue} className={cn(isCompleted && "[&>div]:bg-green-500")} />
              <div className="flex justify-between items-end mt-1 text-xs text-muted-foreground">
                 <span>Start: {format(new Date(viewedPeriodStart), 'MMM dd, yyyy')}</span>
                 <span>End: {format(new Date(periodEnd), 'MMM dd, yyyy')}</span>
