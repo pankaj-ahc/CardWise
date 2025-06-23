@@ -54,6 +54,13 @@ export default function CardDetailLayout({
     }
   }, [params.id, cards, getCard, router, loading]);
 
+  useEffect(() => {
+    // If we are on the root card page (e.g., /cards/123), redirect to the bills tab.
+    if (params.id && pathname === `/cards/${params.id}`) {
+        router.replace(`/cards/${params.id}/bills`);
+    }
+  }, [pathname, params, router]);
+
   if (loading || !card) {
     return <div className="flex-1 p-8">Loading card details...</div>;
   }
