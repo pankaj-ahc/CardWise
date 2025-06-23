@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,23 +25,28 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useCards } from '@/contexts/card-context';
 
-export default function CardDetailPage({ params }: { params: { id: string } }) {
+export default function CardDetailPage() {
   const router = useRouter();
-  const { getCard, updateCard, deleteCard, cards } = useCards();
+  const params = useParams<{ id: string }>();
+  const { getCard, updateCard, deleteCard, cards, loading } = useCards();
 
   const [card, setCard] = useState<CardData | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
-    const foundCard = getCard(params.id);
-    if (!foundCard) {
-      router.replace('/cards');
-    } else {
-      setCard(foundCard);
-    }
-  }, [params.id, cards, getCard, router]);
+    // Wait until loading is false and params are available.
+    if (loading || !params.id) return;
 
-  if (!card) {
+    const foundCard = getCard(params.id);
+    if (foundCard) {
+      setCard(foundCard);
+    } else {
+      // If done loading and card not found, redirect.
+      router.replace('/cards');
+    }
+  }, [params.id, cards, getCard, router, loading]);
+
+  if (loading || !card) {
     return <div className="flex-1 p-8">Loading card details...</div>;
   }
 
