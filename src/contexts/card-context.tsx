@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DUMMY_CARDS } from '@/lib/data';
-import { type CardData } from '@/lib/types';
+import { type CardData, type Bill } from '@/lib/types';
 import { type CardFormValues } from '@/components/cards/add-edit-card-dialog';
+import type { BillFormValues } from '@/components/cards/add-edit-bill-dialog';
+import { format } from 'date-fns';
 
 interface CardContextType {
   cards: CardData[];
@@ -11,6 +13,9 @@ interface CardContextType {
   updateCard: (id: string, data: Partial<CardFormValues>) => void;
   deleteCard: (id: string) => void;
   getCard: (id: string) => CardData | undefined;
+  addBill: (cardId: string, data: BillFormValues) => void;
+  updateBill: (cardId: string, billId: string, data: BillFormValues) => void;
+  deleteBill: (cardId: string, billId: string) => void;
 }
 
 const CardContext = createContext<CardContextType | undefined>(undefined);
@@ -46,8 +51,49 @@ export function CardProvider({ children }: { children: ReactNode }) {
     setCards(prevCards => prevCards.filter(c => c.id !== id));
   };
 
+  const addBill = (cardId: string, data: BillFormValues) => {
+    const newBill: Bill = {
+      ...data,
+      id: `bill-${new Date().getTime()}`,
+      dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+    };
+    setCards(prevCards =>
+      prevCards.map(card =>
+        card.id === cardId
+          ? { ...card, bills: [...card.bills, newBill].sort((a,b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()) }
+          : card
+      )
+    );
+  };
+  
+  const updateBill = (cardId: string, billId: string, data: BillFormValues) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id === cardId) {
+          const updatedBills = card.bills.map(bill =>
+            bill.id === billId ? { ...bill, ...data, dueDate: format(data.dueDate, 'yyyy-MM-dd') } : bill
+          ).sort((a,b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+          return { ...card, bills: updatedBills };
+        }
+        return card;
+      })
+    );
+  };
+
+  const deleteBill = (cardId: string, billId: string) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id === cardId) {
+          const updatedBills = card.bills.filter(bill => bill.id !== billId);
+          return { ...card, bills: updatedBills };
+        }
+        return card;
+      })
+    );
+  };
+
   return (
-    <CardContext.Provider value={{ cards, addCard, updateCard, deleteCard, getCard }}>
+    <CardContext.Provider value={{ cards, addCard, updateCard, deleteCard, getCard, addBill, updateBill, deleteBill }}>
       {children}
     </CardContext.Provider>
   );

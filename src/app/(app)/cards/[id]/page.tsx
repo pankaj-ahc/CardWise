@@ -122,7 +122,7 @@ export default function CardDetailPage({ params }: { params: { id: string } }) {
                 <TabsTrigger value="trackers">Spend Trackers</TabsTrigger>
             </TabsList>
             <TabsContent value="bills" className="space-y-4">
-                <BillsSection bills={card.bills} />
+                <BillsSection cardId={card.id} bills={card.bills} />
             </TabsContent>
             <TabsContent value="trackers" className="space-y-4">
                 <SpendTrackerSection trackers={card.spendTrackers} />
