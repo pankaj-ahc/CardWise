@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, MoreHorizontal, Trash2, CreditCard } from 'lucide-react';
 import { useCards } from '@/contexts/card-context';
 import { type CardData, type Bill } from '@/lib/types';
 import { AddEditBillDialog, type BillFormValues } from '@/components/cards/add-edit-bill-dialog';
@@ -24,8 +24,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useSettings } from '@/contexts/settings-context';
+import Image from 'next/image';
+import { getBankLogo } from '@/lib/banks';
 
-type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string };
+type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string; bankName: string; color: string; };
 
 export default function BillsPage() {
   const { cards, addBill, updateBill, toggleBillPaidStatus, deleteBill, loading } = useCards();
@@ -82,7 +84,9 @@ export default function BillsPage() {
           ...bill,
           cardId: card.id,
           cardName: card.cardName,
-          last4Digits: card.last4Digits
+          last4Digits: card.last4Digits,
+          bankName: card.bankName,
+          color: card.color,
         }))
     )
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
@@ -115,9 +119,23 @@ export default function BillsPage() {
               <TableBody>
                 {displayedBills.map(bill => (
                   <TableRow key={bill.id} data-state={bill.paid ? 'inactive' : 'active'}>
-                    <TableCell className="font-medium">
-                        <div>{bill.cardName}</div>
-                        <div className="text-sm text-muted-foreground">•••• {bill.last4Digits}</div>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg flex items-center justify-center w-10 h-10" style={{ backgroundColor: bill.color }}>
+                            {(() => {
+                                const bankLogo = getBankLogo(bill.bankName);
+                                return bankLogo ? (
+                                    <Image src={bankLogo} alt={`${bill.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} className="rounded-sm bg-white p-0.5" />
+                                ) : (
+                                    <CreditCard className="w-6 h-6 text-white"/>
+                                )
+                            })()}
+                        </div>
+                        <div>
+                            <div className="font-medium">{bill.cardName}</div>
+                            <div className="text-sm text-muted-foreground">•••• {bill.last4Digits}</div>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>{bill.month}</TableCell>
                     <TableCell>{currency}{bill.amount.toFixed(2)}</TableCell>

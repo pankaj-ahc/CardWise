@@ -7,6 +7,8 @@ import { CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
+import Image from 'next/image';
+import { getBankLogo } from '@/lib/banks';
 
 export function UpcomingBills() {
   const { cards } = useCards();
@@ -15,7 +17,7 @@ export function UpcomingBills() {
   const upcomingBills = cards.flatMap(card => 
     card.bills
       .filter(bill => !bill.paid)
-      .map(bill => ({ ...bill, cardName: card.cardName, last4Digits: card.last4Digits, color: card.color }))
+      .map(bill => ({ ...bill, cardName: card.cardName, last4Digits: card.last4Digits, color: card.color, bankName: card.bankName }))
   )
   .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
   .slice(0, 5);
@@ -46,8 +48,15 @@ export function UpcomingBills() {
         <div className="space-y-4">
           {upcomingBills.map((bill) => (
             <div key={bill.id} className="flex items-center">
-              <div className="p-3 rounded-lg mr-4" style={{ backgroundColor: bill.color }}>
-                <CreditCard className="h-5 w-5 text-white" />
+              <div className="p-2 rounded-lg mr-4 flex items-center justify-center w-10 h-10" style={{ backgroundColor: bill.color }}>
+                {(() => {
+                    const bankLogo = getBankLogo(bill.bankName);
+                    return bankLogo ? (
+                        <Image src={bankLogo} alt={`${bill.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} className="rounded-sm bg-white p-0.5" />
+                    ) : (
+                        <CreditCard className="h-6 w-6 text-white" />
+                    )
+                })()}
               </div>
               <div className="flex-grow">
                 <p className="text-sm font-medium leading-none">{bill.cardName} ending in {bill.last4Digits}</p>
