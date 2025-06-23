@@ -2,74 +2,52 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Edit, MoreHorizontal } from 'lucide-react';
 import { useCards } from '@/contexts/card-context';
 import { type CardData, type Bill } from '@/lib/types';
 import { AddEditBillDialog, type BillFormValues } from '@/components/cards/add-edit-bill-dialog';
-import { format, addMonths } from 'date-fns';
+import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
+type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string };
+
 export default function BillsPage() {
   const { cards, addBill, updateBill, toggleBillPaidStatus } = useCards();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingBill, setEditingBill] = useState<Bill | undefined>(undefined);
-  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
 
-  const handleOpenAddDialog = (card: CardData) => {
-    setActiveCardId(card.id);
-
-    const latestBill = card.bills.length > 0
-      ? [...card.bills].sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())[0]
-      : null;
-
-    let nextDueDate: Date;
-    if (latestBill) {
-      nextDueDate = addMonths(new Date(latestBill.dueDate), 1);
-    } else {
-      const now = new Date();
-      nextDueDate = new Date(now.getFullYear(), now.getMonth() + 1, card.dueDate);
-    }
-    
-    const newBillData = {
-      month: format(addMonths(nextDueDate, -1), 'MMMM yyyy'),
-      amount: 0,
-      dueDate: nextDueDate,
-      paid: false,
-    };
-
-    setEditingBill(newBillData as any);
+  const handleOpenAddDialog = () => {
+    setEditingBill(undefined);
     setIsDialogOpen(true);
   };
   
-  const handleOpenEditDialog = (cardId: string, bill: Bill) => {
-    setActiveCardId(cardId);
+  const handleOpenEditDialog = (bill: BillWithCard) => {
     setEditingBill(bill);
     setIsDialogOpen(true);
   }
 
   const handleSaveBill = (data: BillFormValues & { id?: string }) => {
-    if (!activeCardId) return;
+    const { cardId, ...billData } = data;
+    if (!cardId) return;
 
     if (data.id) {
-      updateBill(activeCardId, data.id, data);
+      updateBill(cardId, data.id, billData);
     } else {
-      addBill(activeCardId, data);
+      addBill(cardId, billData);
     }
     setIsDialogOpen(false);
     setEditingBill(undefined);
-    setActiveCardId(null);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingBill(undefined);
-    setActiveCardId(null);
   }
   
-  const allUnpaidBills = cards
+  const allUnpaidBills: BillWithCard[] = cards
     .flatMap(card => 
       card.bills
         .filter(bill => !bill.paid)
@@ -86,6 +64,9 @@ export default function BillsPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Manage Bills</h2>
+        <Button onClick={handleOpenAddDialog}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Bill
+        </Button>
       </div>
 
       <Card>
@@ -131,7 +112,7 @@ export default function BillsPage() {
                               </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleOpenEditDialog(bill.cardId, bill)}>
+                              <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit
                               </DropdownMenuItem>
@@ -149,33 +130,13 @@ export default function BillsPage() {
           )}
         </CardContent>
       </Card>
-      
-      <div className="space-y-2 pt-6">
-        <h3 className="text-2xl font-bold tracking-tight font-headline">Add New Bills</h3>
-        <p className="text-muted-foreground">Select a card to add the next upcoming bill. The due date will be calculated automatically.</p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {cards.map(card => (
-            <Card key={card.id}>
-              <CardHeader>
-                <CardTitle>{card.cardName}</CardTitle>
-                <CardDescription>{card.bankName} •••• {card.last4Digits}</CardDescription>
-              </CardHeader>
-              <CardFooter>
-                 <Button onClick={() => handleOpenAddDialog(card)}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Next Bill
-                </Button>
-              </CardFooter>
-            </Card>
-        ))}
-      </div>
 
       <AddEditBillDialog
         open={isDialogOpen}
         onOpenChange={handleCloseDialog}
         onSave={handleSaveBill}
         bill={editingBill}
+        cards={cards}
       />
     </div>
   );

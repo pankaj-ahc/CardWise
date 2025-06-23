@@ -27,11 +27,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { type Bill } from '@/lib/types';
+import { format, addMonths } from 'date-fns';
+import { type Bill, type CardData } from '@/lib/types';
 import { useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const billFormSchema = z.object({
+  cardId: z.string({ required_error: 'A card is required.' }).min(1, { message: 'Please select a card.' }),
   month: z.string().min(3, { message: 'Month must be at least 3 characters long.' }),
   amount: z.coerce.number().min(0, { message: 'Amount must be a positive number.' }),
   dueDate: z.date({ required_error: 'A due date is required.' }),
@@ -44,13 +46,15 @@ interface AddEditBillDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (bill: BillFormValues & { id?: string }) => void;
-  bill?: Bill;
+  bill?: Bill & { cardId?: string };
+  cards: CardData[];
 }
 
-export function AddEditBillDialog({ open, onOpenChange, onSave, bill }: AddEditBillDialogProps) {
+export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards }: AddEditBillDialogProps) {
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
     defaultValues: {
+      cardId: '',
       month: '',
       amount: 0,
       dueDate: new Date(),
@@ -58,10 +62,13 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill }: AddEditB
     },
   });
 
+  const selectedCardId = form.watch('cardId');
+
   useEffect(() => {
     if (open) {
       if (bill) {
         form.reset({
+          cardId: bill.cardId,
           month: bill.month,
           amount: bill.amount,
           dueDate: new Date(bill.dueDate),
@@ -69,6 +76,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill }: AddEditB
         });
       } else {
         form.reset({
+          cardId: '',
           month: format(new Date(), 'MMMM yyyy'),
           amount: 0,
           dueDate: new Date(),
@@ -78,6 +86,29 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill }: AddEditB
     }
   }, [bill, open, form]);
 
+  useEffect(() => {
+    if (open && !bill?.id && selectedCardId) {
+        const card = cards.find(c => c.id === selectedCardId);
+        if (card) {
+            const latestBill = card.bills.length > 0
+                ? [...card.bills].sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())[0]
+                : null;
+
+            let nextDueDate: Date;
+            if (latestBill) {
+                nextDueDate = addMonths(new Date(latestBill.dueDate), 1);
+            } else {
+                const now = new Date();
+                nextDueDate = new Date(now.getFullYear(), now.getMonth() + 1, card.dueDate);
+            }
+            
+            form.setValue('dueDate', nextDueDate, { shouldValidate: true });
+            form.setValue('month', format(addMonths(nextDueDate, -1), 'MMMM yyyy'), { shouldValidate: true });
+        }
+    }
+  }, [selectedCardId, open, bill, cards, form]);
+
+
   function onSubmit(data: BillFormValues) {
     onSave({
       id: bill?.id,
@@ -86,8 +117,8 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill }: AddEditB
     onOpenChange(false);
   }
 
-  const title = bill ? 'Edit Bill' : 'Add New Bill';
-  const description = bill ? 'Update the details of your monthly bill.' : 'Add a new bill record for this card.';
+  const title = bill?.id ? 'Edit Bill' : 'Add New Bill';
+  const description = bill?.id ? 'Update the details of your monthly bill.' : 'Add a new bill record for a card.';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -98,6 +129,30 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill }: AddEditB
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="cardId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Card</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!bill?.id}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a card" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {cards.map(card => (
+                        <SelectItem key={card.id} value={card.id}>
+                          {card.cardName} (•••• {card.last4Digits})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="month"
