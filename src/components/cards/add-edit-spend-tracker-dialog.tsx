@@ -26,7 +26,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, startOfYear, endOfYear, startOfQuarter, endOfQuarter, startOfMonth, endOfMonth } from 'date-fns';
 import { type SpendTracker } from '@/lib/types';
 import { useEffect } from 'react';
 
@@ -61,6 +61,8 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
     },
   });
 
+  const trackerType = form.watch('type');
+
   useEffect(() => {
     if (open) {
       if (tracker) {
@@ -78,12 +80,40 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
           type: 'Quarterly',
           targetAmount: 0,
           currentSpend: 0,
-          startDate: new Date(),
-          endDate: new Date(),
+          startDate: startOfQuarter(new Date()),
+          endDate: endOfQuarter(new Date()),
         });
       }
     }
   }, [tracker, open, form]);
+
+  useEffect(() => {
+    if (!open || !!tracker?.id) return; // Only applies for new trackers.
+
+    const now = new Date();
+    let start, end;
+
+    switch(trackerType) {
+        case 'Monthly':
+            start = startOfMonth(now);
+            end = endOfMonth(now);
+            break;
+        case 'Quarterly':
+            start = startOfQuarter(now);
+            end = endOfQuarter(now);
+            break;
+        case 'Annual':
+            start = startOfYear(now);
+            end = endOfYear(now);
+            break;
+        default:
+            return;
+    }
+
+    form.setValue('startDate', start, { shouldValidate: true });
+    form.setValue('endDate', end, { shouldValidate: true });
+
+  }, [trackerType, open, tracker, form]);
 
   function onSubmit(data: SpendTrackerFormValues) {
     onSave({

@@ -9,7 +9,7 @@ export interface Bill {
 }
 
 export interface SpendTracker {
-  id: string;
+  id:string;
   name: string;
   type: 'Annual' | 'Quarterly' | 'Monthly';
   targetAmount: number;
@@ -23,7 +23,6 @@ export interface CardData {
   cardName: string;
   last4Digits: string;
   bankName: string;
-  billDate: number; // Day of the month
   dueDate: number; // Day of the month
   annualFee: number;
   billingCycleStartMonth: string;

@@ -88,7 +88,6 @@ export function CardProvider({ children }: { children: ReactNode }) {
           bills: [],
           spendTrackers: [],
           perks: [],
-          dueDate: (data.billDate + 25) % 30 || 25,
           billingCycleStartMonth: 'January',
           feeWaiverCriteria: 'N/A',
       };

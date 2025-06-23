@@ -28,7 +28,7 @@ const cardFormSchema = z.object({
   cardName: z.string().min(2, { message: 'Card name must be at least 2 characters.' }),
   bankName: z.string().min(2, { message: 'Bank name must be at least 2 characters.' }),
   last4Digits: z.string().length(4, { message: 'Must be 4 digits.' }).regex(/^\d{4}$/, { message: "Must be 4 digits." }),
-  billDate: z.coerce.number().min(1).max(31),
+  dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
   annualFee: z.coerce.number().min(0),
   color: z.string().regex(/^hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\)$/, { message: "Must be a valid HSL color string, e.g., hsl(217, 89%, 61%)" }),
 });
@@ -49,7 +49,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       cardName: '',
       bankName: '',
       last4Digits: '',
-      billDate: 1,
+      dueDate: 1,
       annualFee: 0,
       color: 'hsl(217, 89%, 61%)',
     },
@@ -62,7 +62,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           cardName: card.cardName,
           bankName: card.bankName,
           last4Digits: card.last4Digits,
-          billDate: card.billDate,
+          dueDate: card.dueDate,
           annualFee: card.annualFee,
           color: card.color,
         });
@@ -71,7 +71,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           cardName: '',
           bankName: '',
           last4Digits: '',
-          billDate: 1,
+          dueDate: 1,
           annualFee: 0,
           color: 'hsl(217, 89%, 61%)',
         });
@@ -141,10 +141,10 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
             />
             <FormField
               control={form.control}
-              name="billDate"
+              name="dueDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bill Date (Day of Month)</FormLabel>
+                  <FormLabel>Due Date (Day of Month)</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
