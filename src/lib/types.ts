@@ -16,11 +16,15 @@ export interface SpendTracker {
   startDate: string;
 }
 
+export const CARD_VARIANTS = ['Visa', 'Mastercard', 'American Express', 'Discover', 'RuPay', 'Maestro', 'Other'] as const;
+export type CardVariant = typeof CARD_VARIANTS[number];
+
 export interface CardData {
   id: string;
   cardName: string;
   last4Digits: string;
   bankName: string;
+  cardVariant: CardVariant;
   dueDate: number; // Day of the month
   annualFee: number;
   billingCycleStartMonth: string;
