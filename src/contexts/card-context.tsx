@@ -153,16 +153,19 @@ export function CardProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const card = getCard(cardId);
     if (!card) return;
-    const updatedBills = card.bills.map(bill => {
-      if (bill.id === billId) {
-        const isPaid = !bill.paid;
-        return { 
-          ...bill, 
-          paid: isPaid, 
-          paymentDate: isPaid ? new Date().toISOString() : undefined
-        };
+    const updatedBills = card.bills.map(b => {
+      if (b.id === billId) {
+        const isNowPaid = !b.paid;
+        if (isNowPaid) {
+          // If marking as paid, add paymentDate
+          return { ...b, paid: true, paymentDate: new Date().toISOString() };
+        } else {
+          // If marking as unpaid, remove paymentDate to avoid sending 'undefined' to Firestore
+          const { paymentDate, ...restOfBill } = b;
+          return { ...restOfBill, paid: false };
+        }
       }
-      return bill;
+      return b;
     });
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
     await updateDoc(cardDocRef, { bills: updatedBills });
