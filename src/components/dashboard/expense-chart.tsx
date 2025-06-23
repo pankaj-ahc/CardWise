@@ -74,9 +74,10 @@ export function ExpenseChart() {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `${currency}${value}`}
+                    tickFormatter={(value) => `${currency}${Math.round(value as number)}`}
                 />
                 <Tooltip
+                    formatter={(value: number) => `${currency}${Math.round(value)}`}
                     contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         borderColor: 'hsl(var(--border))',

@@ -44,7 +44,7 @@ export function StatsCards() {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{currency}{totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{currency}{totalOutstanding.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
           <p className="text-xs text-muted-foreground">Across all cards</p>
         </CardContent>
       </Card>
@@ -74,7 +74,7 @@ export function StatsCards() {
           <CheckCircle2 className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{currency}{totalPaidThisMonth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{currency}{totalPaidThisMonth.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
           <p className="text-xs text-muted-foreground">Total amount settled</p>
         </CardContent>
       </Card>

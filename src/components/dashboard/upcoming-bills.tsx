@@ -64,7 +64,7 @@ export function UpcomingBills() {
                 </p>
               </div>
               <div className="ml-auto text-right">
-                 <div className="font-medium">{currency}{bill.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                 <div className="font-medium">{currency}{bill.amount.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                 {getUrgencyBadge(bill.dueDate)}
               </div>
             </div>
