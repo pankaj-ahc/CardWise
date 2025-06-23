@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { Separator } from './ui/separator';
+import { Logo } from './ui/logo';
 
 
 const menuItems = [
@@ -50,10 +51,7 @@ export function AppSidebar() {
     <Sidebar variant="inset" collapsible="icon" className="border-r-0">
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
-            <div className="p-1.5 rounded-md bg-primary text-primary-foreground">
-                <CreditCard className="h-5 w-5" />
-            </div>
-            <span className="text-lg font-semibold font-headline">CardWise</span>
+           <Logo className="h-9 w-auto" />
         </div>
       </SidebarHeader>
       <SidebarContent>

@@ -1,11 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CreditCard } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { Logo } from '@/components/ui/logo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,11 +29,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center space-y-4">
-          <div className="rounded-full bg-primary p-4 text-primary-foreground">
-            <CreditCard className="h-10 w-10" />
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-headline">
-            Welcome to CardWise
+          <Logo className="w-64 h-auto" />
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline pt-4">
+            Welcome
           </h1>
           <p className="text-center text-muted-foreground">
             Your personal assistant for managing credit card bills and maximizing rewards.
