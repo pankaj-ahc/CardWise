@@ -99,9 +99,12 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
 
             let nextDueDate: Date;
             if (latestBill) {
-                nextDueDate = addMonths(new Date(latestBill.dueDate), 1);
+                const lastDueDate = new Date(latestBill.dueDate);
+                // Calculate next month's due date based on the last bill's month and the card's specific due day.
+                nextDueDate = new Date(lastDueDate.getFullYear(), lastDueDate.getMonth() + 1, card.dueDate);
             } else {
                 const now = new Date();
+                // For the first bill, set it to next month, using the card's due day.
                 nextDueDate = new Date(now.getFullYear(), now.getMonth() + 1, card.dueDate);
             }
             
