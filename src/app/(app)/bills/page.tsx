@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Edit, MoreHorizontal, Trash2, CreditCard } from 'lucide-react';
@@ -35,6 +35,33 @@ export default function BillsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
   const [deletingBillInfo, setDeletingBillInfo] = useState<{ cardId: string; billId: string } | null>(null);
+  const [displayedBills, setDisplayedBills] = useState<BillWithCard[]>([]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    // This logic is now inside useEffect to run only on the client
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const filteredBills = cards
+      .flatMap(card => 
+        card.bills
+          .filter(bill => 
+            !bill.paid || (bill.paymentDate && new Date(bill.paymentDate) > fifteenMinutesAgo)
+          )
+          .map(bill => ({
+            ...bill,
+            cardId: card.id,
+            cardName: card.cardName,
+            last4Digits: card.last4Digits,
+            bankName: card.bankName,
+            color: card.color,
+          }))
+      )
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+      
+    setDisplayedBills(filteredBills);
+
+  }, [cards, loading]);
 
   const handleOpenAddDialog = () => {
     setEditingBill(undefined);
@@ -72,25 +99,6 @@ export default function BillsPage() {
       setDeletingBillInfo(null);
     }
   }
-
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-  const displayedBills: BillWithCard[] = cards
-    .flatMap(card => 
-      card.bills
-        .filter(bill => 
-          !bill.paid || (bill.paymentDate && new Date(bill.paymentDate) > fifteenMinutesAgo)
-        )
-        .map(bill => ({
-          ...bill,
-          cardId: card.id,
-          cardName: card.cardName,
-          last4Digits: card.last4Digits,
-          bankName: card.bankName,
-          color: card.color,
-        }))
-    )
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-
 
   const renderContent = () => {
     if (loading) {

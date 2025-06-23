@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { type SpendTracker, type Bill } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -21,6 +21,7 @@ import { Edit, MoreHorizontal, Trash2, ChevronLeft, ChevronRight } from 'lucide-
 import { format, addMonths, addYears, startOfDay, addDays, getQuarter } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SpendTrackerItemProps {
     tracker: SpendTracker;
@@ -82,10 +83,19 @@ export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrac
     const { currency } = useSettings();
     const trackerStartDate = useMemo(() => new Date(tracker.startDate), [tracker.startDate]);
     
-    const initialPeriodStart = useMemo(() => getPeriodStartForDate(new Date(), trackerStartDate, tracker.type), [trackerStartDate, tracker.type]);
-    const [viewedPeriodStart, setViewedPeriodStart] = useState<Date>(initialPeriodStart);
+    // Defer initialization of viewedPeriodStart to useEffect
+    const [viewedPeriodStart, setViewedPeriodStart] = useState<Date | null>(null);
+
+    useEffect(() => {
+        // This runs only on the client, avoiding hydration mismatch.
+        setViewedPeriodStart(getPeriodStartForDate(new Date(), trackerStartDate, tracker.type));
+    }, [trackerStartDate, tracker.type]);
+
 
     const { periodEnd, periodLabel, currentSpend } = useMemo(() => {
+        if (!viewedPeriodStart) {
+            return { periodEnd: null, periodLabel: 'Loading...', currentSpend: 0 };
+        }
         const start = startOfDay(viewedPeriodStart);
         const end = getPeriodEnd(start, tracker.type);
 
@@ -101,6 +111,14 @@ export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrac
 
         return { periodEnd: end, periodLabel: label, currentSpend: spend };
     }, [viewedPeriodStart, tracker.type, bills]);
+
+    if (!viewedPeriodStart || !periodEnd) {
+        return (
+            <div className="group relative border-t pt-6 h-[130px]">
+                <Skeleton className="h-full w-full" />
+            </div>
+        );
+    }
 
     const handlePrev = () => setViewedPeriodStart(getAdjacentPeriodStart(viewedPeriodStart, tracker.type, 'prev'));
     const handleNext = () => setViewedPeriodStart(getAdjacentPeriodStart(viewedPeriodStart, tracker.type, 'next'));
