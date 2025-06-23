@@ -16,6 +16,7 @@ interface CardContextType {
   addBill: (cardId: string, data: BillFormValues) => void;
   updateBill: (cardId: string, billId: string, data: BillFormValues) => void;
   deleteBill: (cardId: string, billId: string) => void;
+  toggleBillPaidStatus: (cardId: string, billId: string) => void;
 }
 
 const CardContext = createContext<CardContextType | undefined>(undefined);
@@ -92,8 +93,30 @@ export function CardProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const toggleBillPaidStatus = (cardId: string, billId: string) => {
+    setCards(prevCards =>
+      prevCards.map(card => {
+        if (card.id === cardId) {
+          const updatedBills = card.bills.map(bill => {
+            if (bill.id === billId) {
+              const isPaid = !bill.paid;
+              return { 
+                ...bill, 
+                paid: isPaid, 
+                paymentDate: isPaid ? format(new Date(), 'yyyy-MM-dd') : undefined
+              };
+            }
+            return bill;
+          });
+          return { ...card, bills: updatedBills };
+        }
+        return card;
+      })
+    );
+  };
+
   return (
-    <CardContext.Provider value={{ cards, addCard, updateCard, deleteCard, getCard, addBill, updateBill, deleteBill }}>
+    <CardContext.Provider value={{ cards, addCard, updateCard, deleteCard, getCard, addBill, updateBill, deleteBill, toggleBillPaidStatus }}>
       {children}
     </CardContext.Provider>
   );

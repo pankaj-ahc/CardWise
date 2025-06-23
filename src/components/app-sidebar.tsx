@@ -13,11 +13,12 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { CreditCard, LayoutDashboard, LogOut, Settings } from 'lucide-react';
+import { CreditCard, LayoutDashboard, LogOut, Wallet } from 'lucide-react';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/cards', label: 'Cards', icon: CreditCard },
+  { href: '/bills', label: 'Bills', icon: Wallet },
 ];
 
 export function AppSidebar() {

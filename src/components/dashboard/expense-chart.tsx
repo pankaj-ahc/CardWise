@@ -2,27 +2,33 @@
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DUMMY_CARDS } from '@/lib/data';
-
-const monthlyData = DUMMY_CARDS.flatMap(card => 
-    card.bills.map(bill => ({
-        month: bill.month.split(' ')[0],
-        [card.cardName]: bill.amount,
-        fill: card.color
-    }))
-).reduce((acc, curr) => {
-    const monthEntry = acc.find(item => item.month === curr.month);
-    if (monthEntry) {
-        Object.assign(monthEntry, { ...monthEntry, ...curr });
-    } else {
-        acc.push(curr);
-    }
-    return acc;
-}, [] as any[]);
-
-const cardNames = DUMMY_CARDS.map(c => c.cardName);
+import { useCards } from '@/contexts/card-context';
+import { format } from 'date-fns';
 
 export function ExpenseChart() {
+  const { cards } = useCards();
+
+  const monthlyData = cards.flatMap(card => 
+      card.bills.map(bill => ({
+          month: format(new Date(bill.dueDate), 'MMM'),
+          [card.cardName]: bill.amount,
+          fill: card.color
+      }))
+  ).reduce((acc, curr) => {
+      const monthEntry = acc.find(item => item.month === curr.month);
+      if (monthEntry) {
+          const cardName = Object.keys(curr).find(k => k !== 'month' && k !== 'fill');
+          if (cardName) {
+            monthEntry[cardName] = (monthEntry[cardName] || 0) + curr[cardName];
+          }
+      } else {
+          acc.push({ ...curr });
+      }
+      return acc;
+  }, [] as any[]);
+
+  const cardNames = cards.map(c => c.cardName);
+
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
@@ -54,8 +60,8 @@ export function ExpenseChart() {
                         borderRadius: 'var(--radius)',
                     }}
                 />
-                {cardNames.map((name, index) => (
-                    <Bar key={name} dataKey={name} fill={DUMMY_CARDS[index].color} radius={[4, 4, 0, 0]} />
+                {cards.map((card) => (
+                    <Bar key={card.id} dataKey={card.cardName} fill={card.color} radius={[4, 4, 0, 0]} stackId="a" />
                 ))}
             </BarChart>
         </ResponsiveContainer>

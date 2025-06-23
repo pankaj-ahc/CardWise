@@ -1,18 +1,24 @@
-import { DUMMY_CARDS } from '@/lib/data';
+'use client';
+
+import { useCards } from '@/contexts/card-context';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { DollarSign, CreditCard, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { type Bill } from '@/lib/types';
 
 export function StatsCards() {
+  const { cards } = useCards();
   const now = new Date();
-  const upcomingBills = DUMMY_CARDS.flatMap(card => card.bills)
+
+  const allBills = cards.flatMap(card => card.bills);
+
+  const upcomingBills = allBills
     .filter(bill => !bill.paid && new Date(bill.dueDate) >= now);
 
-  const totalOutstanding = DUMMY_CARDS.flatMap(card => card.bills)
+  const totalOutstanding = allBills
     .filter(bill => !bill.paid)
     .reduce((sum, bill) => sum + bill.amount, 0);
 
-  const totalPaidThisMonth = DUMMY_CARDS.flatMap(card => card.bills)
+  const totalPaidThisMonth = allBills
     .filter(bill => {
       if (!bill.paid || !bill.paymentDate) return false;
       const paymentDate = new Date(bill.paymentDate);

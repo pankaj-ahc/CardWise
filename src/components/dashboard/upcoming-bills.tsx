@@ -1,13 +1,16 @@
+'use client';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DUMMY_CARDS } from '@/lib/data';
+import { useCards } from '@/contexts/card-context';
 import { CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { format, differenceInDays, parse } from 'date-fns';
+import { format, differenceInDays, parseISO } from 'date-fns';
 
 export function UpcomingBills() {
+  const { cards } = useCards();
   const now = new Date();
-  const upcomingBills = DUMMY_CARDS.flatMap(card => 
+  const upcomingBills = cards.flatMap(card => 
     card.bills
       .filter(bill => !bill.paid)
       .map(bill => ({ ...bill, cardName: card.cardName, last4Digits: card.last4Digits, color: card.color }))
