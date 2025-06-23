@@ -7,9 +7,10 @@ import { PlusCircle } from 'lucide-react';
 import { AddEditCardDialog, type CardFormValues } from '@/components/cards/add-edit-card-dialog';
 import { type CardData } from '@/lib/types';
 import { useCards } from '@/contexts/card-context';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CardsPage() {
-  const { cards, addCard, updateCard, deleteCard } = useCards();
+  const { cards, addCard, updateCard, deleteCard, loading } = useCards();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CardData | undefined>(undefined);
 
@@ -44,16 +45,41 @@ export default function CardsPage() {
           </Button>
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {cards.map((card) => (
-          <CardListItem 
-            key={card.id} 
-            card={card}
-            onEdit={() => openEditDialog(card)}
-            onDelete={() => deleteCard(card.id)}
-          />
-        ))}
-      </div>
+      
+      {loading ? (
+         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex flex-col space-y-3">
+                    <Skeleton className="h-[250px] w-full rounded-xl" />
+                </div>
+            ))}
+        </div>
+      ) : cards.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {cards.map((card) => (
+              <CardListItem 
+                key={card.id} 
+                card={card}
+                onEdit={() => openEditDialog(card)}
+                onDelete={() => deleteCard(card.id)}
+              />
+            ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center rounded-lg border border-dashed shadow-sm h-64">
+          <div className="flex flex-col items-center gap-1 text-center">
+            <h3 className="text-2xl font-bold tracking-tight">You have no cards</h3>
+            <p className="text-sm text-muted-foreground">
+              Get started by adding your first credit card.
+            </p>
+            <Button className="mt-4" onClick={openAddDialog}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Card
+            </Button>
+          </div>
+        </div>
+      )}
+
 
       <AddEditCardDialog
         open={isDialogOpen}

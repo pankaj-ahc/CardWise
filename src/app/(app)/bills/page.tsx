@@ -11,11 +11,12 @@ import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string };
 
 export default function BillsPage() {
-  const { cards, addBill, updateBill, toggleBillPaidStatus } = useCards();
+  const { cards, addBill, updateBill, toggleBillPaidStatus, loading } = useCards();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
 
@@ -60,22 +61,19 @@ export default function BillsPage() {
     )
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
-  return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Manage Bills</h2>
-        <Button onClick={handleOpenAddDialog}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Bill
-        </Button>
-      </div>
+  const renderContent = () => {
+    if (loading) {
+        return (
+             <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+        )
+    }
 
-      <Card>
-        <CardHeader>
-            <CardTitle>All Unpaid Bills</CardTitle>
-            <CardDescription>A consolidated view of all your upcoming credit card payments.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {allUnpaidBills.length > 0 ? (
+    if (allUnpaidBills.length > 0) {
+        return (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -123,11 +121,32 @@ export default function BillsPage() {
                 ))}
               </TableBody>
             </Table>
-          ) : (
-            <div className="text-center text-muted-foreground py-8">
-              All caught up! No unpaid bills.
-            </div>
-          )}
+        )
+    }
+
+    return (
+        <div className="text-center text-muted-foreground py-8">
+            All caught up! No unpaid bills.
+        </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Manage Bills</h2>
+        <Button onClick={handleOpenAddDialog}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Bill
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>All Unpaid Bills</CardTitle>
+            <CardDescription>A consolidated view of all your upcoming credit card payments.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {renderContent()}
         </CardContent>
       </Card>
 

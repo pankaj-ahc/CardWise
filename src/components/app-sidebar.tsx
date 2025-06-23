@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarHeader,
@@ -14,6 +14,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CreditCard, LayoutDashboard, LogOut, Wallet } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -23,6 +27,22 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'CW';
+    const names = name.split(' ');
+    if (names.length > 1) {
+        return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
 
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-r-0">
@@ -55,18 +75,16 @@ export function AppSidebar() {
       <SidebarFooter>
         <div className="flex items-center gap-3">
           <Avatar>
-            <AvatarImage src="https://placehold.co/40x40.png" alt="@shadcn" data-ai-hint="user avatar" />
-            <AvatarFallback>CW</AvatarFallback>
+            <AvatarImage src={user?.photoURL ?? "https://placehold.co/40x40.png"} alt={user?.displayName ?? "User"} data-ai-hint="user avatar" />
+            <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col text-sm">
-            <span className="font-semibold">User</span>
-            <span className="text-muted-foreground">user@email.com</span>
+            <span className="font-semibold">{user?.displayName ?? 'User'}</span>
+            <span className="text-muted-foreground">{user?.email ?? 'user@email.com'}</span>
           </div>
-          <Link href="/" className="ml-auto">
-            <Button variant="ghost" size="icon" aria-label="Log out">
+          <Button variant="ghost" size="icon" aria-label="Log out" onClick={handleLogout} className="ml-auto">
               <LogOut />
-            </Button>
-          </Link>
+          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>
