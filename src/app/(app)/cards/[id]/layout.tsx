@@ -25,8 +25,12 @@ import {
 import { useCards } from '@/contexts/card-context';
 import { useSettings } from '@/contexts/settings-context';
 import { getBankLogo } from '@/lib/banks';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// This is necessary for static export of dynamic routes.
+export async function generateStaticParams() {
+  return [];
+}
 
 export default function CardDetailLayout({
   children,
@@ -122,7 +126,7 @@ export default function CardDetailLayout({
                     style={!bankLogo ? { backgroundColor: card.color } : {}}
                 >
                      {bankLogo ? (
-                        <Image src={bankLogo} alt={`${card.bankName} logo`} width={48} height={48} style={{ objectFit: 'contain' }} />
+                        <img src={bankLogo} alt={`${card.bankName} logo`} width="48" height="48" style={{ objectFit: 'contain' }} className="w-12 h-12" />
                     ) : (
                         <CreditCard className="w-10 h-10 text-white"/>
                     )}

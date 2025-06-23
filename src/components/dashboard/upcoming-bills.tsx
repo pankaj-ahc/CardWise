@@ -7,7 +7,6 @@ import { CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
-import Image from 'next/image';
 import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 
@@ -53,7 +52,7 @@ export function UpcomingBills() {
             <div key={bill.id} className="flex items-center">
                <div className={cn("rounded-lg mr-4 flex items-center justify-center w-10 h-10", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
                 {bankLogo ? (
-                    <Image src={bankLogo} alt={`${bill.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
+                    <img src={bankLogo} alt={`${bill.bankName} logo`} width="32" height="32" style={{ objectFit: 'contain' }} className="w-8 h-8" />
                 ) : (
                     <CreditCard className="h-6 w-6 text-white" />
                 )}

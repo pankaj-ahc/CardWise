@@ -24,7 +24,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useSettings } from '@/contexts/settings-context';
-import Image from 'next/image';
 import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 
@@ -126,7 +125,7 @@ export default function BillsPage() {
                       <div className="flex items-center gap-3">
                         <div className={cn("rounded-lg flex items-center justify-center w-10 h-10", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
                             {bankLogo ? (
-                                <Image src={bankLogo} alt={`${bill.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
+                                <img src={bankLogo} alt={`${bill.bankName} logo`} width="32" height="32" style={{ objectFit: 'contain' }} className="w-8 h-8" />
                             ) : (
                                 <CreditCard className="w-6 h-6 text-white"/>
                             )}

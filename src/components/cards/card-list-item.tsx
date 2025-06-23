@@ -24,7 +24,6 @@ import React from 'react';
 import { addMonths, addYears, startOfDay, addDays, format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
 import { getBankLogo } from '@/lib/banks';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface CardListItemProps {
@@ -86,7 +85,7 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
               style={!bankLogo ? { backgroundColor: card.color } : {}}
             >
                 {bankLogo ? (
-                     <Image src={bankLogo} alt={`${card.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
+                     <img src={bankLogo} alt={`${card.bankName} logo`} width="32" height="32" style={{ objectFit: 'contain' }} className="w-8 h-8" />
                 ) : (
                     <CreditCard className="w-8 h-8 text-white"/>
                 )}
