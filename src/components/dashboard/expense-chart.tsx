@@ -4,9 +4,11 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recha
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCards } from '@/contexts/card-context';
 import { format } from 'date-fns';
+import { useSettings } from '@/contexts/settings-context';
 
 export function ExpenseChart() {
   const { cards } = useCards();
+  const { currency } = useSettings();
 
   const monthlyData = cards.flatMap(card => 
       card.bills.map(bill => ({
@@ -50,7 +52,7 @@ export function ExpenseChart() {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `${currency}${value}`}
                 />
                 <Tooltip
                     cursor={{fill: 'hsl(var(--card))'}}

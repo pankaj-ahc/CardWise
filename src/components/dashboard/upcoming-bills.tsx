@@ -6,9 +6,11 @@ import { useCards } from '@/contexts/card-context';
 import { CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, differenceInDays, parseISO } from 'date-fns';
+import { useSettings } from '@/contexts/settings-context';
 
 export function UpcomingBills() {
   const { cards } = useCards();
+  const { currency } = useSettings();
   const now = new Date();
   const upcomingBills = cards.flatMap(card => 
     card.bills
@@ -54,7 +56,7 @@ export function UpcomingBills() {
                 </p>
               </div>
               <div className="ml-auto text-right">
-                 <div className="font-medium">${bill.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                 <div className="font-medium">{currency}{bill.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 {getUrgencyBadge(bill.dueDate)}
               </div>
             </div>

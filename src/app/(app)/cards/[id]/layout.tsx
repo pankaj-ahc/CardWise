@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useCards } from '@/contexts/card-context';
+import { useSettings } from '@/contexts/settings-context';
 
 export default function CardDetailLayout({
   children,
@@ -33,6 +34,7 @@ export default function CardDetailLayout({
   const params = useParams<{ id: string }>();
   const pathname = usePathname();
   const { getCard, updateCard, deleteCard, cards, loading } = useCards();
+  const { currency } = useSettings();
 
   const [card, setCard] = useState<CardData | undefined>(undefined);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -122,7 +124,7 @@ export default function CardDetailLayout({
                 </div>
                 <div className="text-right">
                     <p className="text-sm text-muted-foreground">Annual Fee</p>
-                    <p className="text-lg font-bold">${card.annualFee}</p>
+                    <p className="text-lg font-bold">{currency}{card.annualFee}</p>
                 </div>
             </CardHeader>
         </Card>

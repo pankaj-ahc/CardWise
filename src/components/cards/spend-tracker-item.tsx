@@ -18,6 +18,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Edit, MoreHorizontal, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths, addYears, startOfDay, addDays, getQuarter } from 'date-fns';
+import { useSettings } from '@/contexts/settings-context';
 
 interface SpendTrackerItemProps {
     tracker: SpendTracker;
@@ -76,6 +77,7 @@ const getPeriodLabel = (periodStart: Date, type: SpendTracker['type']): string =
 
 
 export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrackerItemProps) {
+    const { currency } = useSettings();
     const trackerStartDate = useMemo(() => new Date(tracker.startDate), [tracker.startDate]);
     
     const initialPeriodStart = useMemo(() => getPeriodStartForDate(new Date(), trackerStartDate, tracker.type), [trackerStartDate, tracker.type]);
@@ -167,7 +169,7 @@ export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrac
                     Spend
                 </p>
                 <p className="text-sm font-mono">
-                    ${currentSpend.toLocaleString('en-US', { minimumFractionDigits: 2 })} / ${tracker.targetAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {currency}{currentSpend.toLocaleString('en-US', { minimumFractionDigits: 2 })} / {currency}{tracker.targetAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
             </div>
             <Progress value={progressValue} />

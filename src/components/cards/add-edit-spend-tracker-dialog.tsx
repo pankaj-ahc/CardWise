@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { type SpendTracker } from '@/lib/types';
 import { useEffect } from 'react';
+import { useSettings } from '@/contexts/settings-context';
 
 const spendTrackerFormSchema = z.object({
   name: z.string().min(2, { message: 'Tracker name is required.' }),
@@ -47,6 +48,7 @@ interface AddEditSpendTrackerDialogProps {
 }
 
 export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker }: AddEditSpendTrackerDialogProps) {
+  const { currency } = useSettings();
   const form = useForm<SpendTrackerFormValues>({
     resolver: zodResolver(spendTrackerFormSchema),
     defaultValues: {
@@ -137,7 +139,7 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
               name="targetAmount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Target ($)</FormLabel>
+                  <FormLabel>Target ({currency})</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" {...field} />
                   </FormControl>

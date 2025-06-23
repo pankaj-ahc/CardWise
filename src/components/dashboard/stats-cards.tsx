@@ -4,9 +4,11 @@ import { useCards } from '@/contexts/card-context';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { DollarSign, CreditCard, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { type Bill } from '@/lib/types';
+import { useSettings } from '@/contexts/settings-context';
 
 export function StatsCards() {
   const { cards } = useCards();
+  const { currency } = useSettings();
   const now = new Date();
 
   const allBills = cards.flatMap(card => card.bills);
@@ -42,7 +44,7 @@ export function StatsCards() {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{currency}{totalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <p className="text-xs text-muted-foreground">Across all cards</p>
         </CardContent>
       </Card>
@@ -72,7 +74,7 @@ export function StatsCards() {
           <CheckCircle2 className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totalPaidThisMonth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-2xl font-bold">{currency}{totalPaidThisMonth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <p className="text-xs text-muted-foreground">Total amount settled</p>
         </CardContent>
       </Card>

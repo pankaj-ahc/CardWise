@@ -23,11 +23,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useSettings } from '@/contexts/settings-context';
 
 type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string };
 
 export default function BillsPage() {
   const { cards, addBill, updateBill, toggleBillPaidStatus, deleteBill, loading } = useCards();
+  const { currency } = useSettings();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
   const [deletingBillInfo, setDeletingBillInfo] = useState<{ cardId: string; billId: string } | null>(null);
@@ -118,7 +120,7 @@ export default function BillsPage() {
                         <div className="text-sm text-muted-foreground">•••• {bill.last4Digits}</div>
                     </TableCell>
                     <TableCell>{bill.month}</TableCell>
-                    <TableCell>${bill.amount.toFixed(2)}</TableCell>
+                    <TableCell>{currency}{bill.amount.toFixed(2)}</TableCell>
                     <TableCell>{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
                       <Switch

@@ -1,0 +1,84 @@
+'use client';
+
+import { useTheme } from 'next-themes';
+import { useSettings } from '@/contexts/settings-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Sun, Moon, Laptop } from 'lucide-react';
+
+export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
+  const { currency, setCurrency } = useSettings();
+
+  return (
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Settings</h2>
+      </div>
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Appearance</CardTitle>
+            <CardDescription>Customize the look and feel of the application.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>Theme</Label>
+              <RadioGroup
+                value={theme}
+                onValueChange={setTheme}
+                className="grid max-w-md grid-cols-1 sm:grid-cols-3 gap-4"
+              >
+                <div>
+                  <RadioGroupItem value="light" id="light" className="peer sr-only" />
+                  <Label
+                    htmlFor="light"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  >
+                    <Sun className="mb-2 h-6 w-6" />
+                    Light
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
+                  <Label
+                    htmlFor="dark"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  >
+                    <Moon className="mb-2 h-6 w-6" />
+                    Dark
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="system" id="system" className="peer sr-only" />
+                  <Label
+                    htmlFor="system"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  >
+                    <Laptop className="mb-2 h-6 w-6" />
+                    System
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency Symbol</Label>
+              <Input
+                id="currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="max-w-xs"
+                maxLength={5}
+              />
+              <p className="text-sm text-muted-foreground">
+                This symbol will be used to display monetary values across the app.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

@@ -23,6 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { type CardData } from '@/lib/types';
 import { useEffect } from 'react';
+import { useSettings } from '@/contexts/settings-context';
 
 const cardFormSchema = z.object({
   cardName: z.string().min(2, { message: 'Card name must be at least 2 characters.' }),
@@ -43,6 +44,7 @@ interface AddEditCardDialogProps {
 }
 
 export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditCardDialogProps) {
+  const { currency } = useSettings();
   const form = useForm<CardFormValues>({
     resolver: zodResolver(cardFormSchema),
     defaultValues: {
@@ -157,7 +159,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
               name="annualFee"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Annual Fee ($)</FormLabel>
+                  <FormLabel>Annual Fee ({currency})</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>

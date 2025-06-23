@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
+import { useSettings } from '@/contexts/settings-context';
 
 interface BillsSectionProps {
     cardId: string;
@@ -30,6 +31,7 @@ interface BillsSectionProps {
 
 export function BillsSection({ cardId, bills }: BillsSectionProps) {
     const { cards, addBill, updateBill, deleteBill } = useCards();
+    const { currency } = useSettings();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingBill, setEditingBill] = useState<(Bill & { cardId: string; }) | undefined>(undefined);
     const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export function BillsSection({ cardId, bills }: BillsSectionProps) {
                             {bills.length > 0 ? bills.map((bill) => (
                                 <TableRow key={bill.id}>
                                     <TableCell className="font-medium">{bill.month}</TableCell>
-                                    <TableCell>${bill.amount.toFixed(2)}</TableCell>
+                                    <TableCell>{currency}{bill.amount.toFixed(2)}</TableCell>
                                     <TableCell>{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</TableCell>
                                     <TableCell>
                                         <Badge variant={bill.paid ? "default" : "secondary"} className={bill.paid ? 'bg-green-500 hover:bg-green-500/90' : ''}>

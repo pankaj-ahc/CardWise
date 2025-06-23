@@ -13,16 +13,18 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { CreditCard, LayoutDashboard, LogOut, Wallet } from 'lucide-react';
+import { CreditCard, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
+import { Separator } from './ui/separator';
 
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/cards', label: 'Cards', icon: CreditCard },
   { href: '/bills', label: 'Bills', icon: Wallet },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -73,6 +75,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
+        <Separator className="mb-2"/>
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarImage src={user?.photoURL ?? "https://placehold.co/40x40.png"} alt={user?.displayName ?? "User"} data-ai-hint="user avatar" />

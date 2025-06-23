@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import React from 'react';
 import { addMonths, addYears, startOfDay, addDays, format } from 'date-fns';
+import { useSettings } from '@/contexts/settings-context';
 
 interface CardListItemProps {
   card: CardData;
@@ -70,6 +71,7 @@ const getPeriodStartForDate = (targetDate: Date, trackerStartDate: Date, type: S
 
 
 export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
+    const { currency } = useSettings();
     const nextBill = card.bills.find(b => !b.paid);
 
   return (
@@ -126,7 +128,7 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                  <div>
                     <div className="mb-1 flex justify-between items-baseline">
                         <span className="text-sm font-medium text-muted-foreground">Next Bill</span>
-                        <span className="text-lg font-bold">${nextBill.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        <span className="text-lg font-bold">{currency}{nextBill.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <p className="text-right text-sm text-muted-foreground">Due on {format(new Date(nextBill.dueDate), 'MMM dd, yyyy')}</p>
                 </div>
@@ -158,7 +160,7 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                                     <Progress value={progressValue} className="h-5" />
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <span className="text-xs font-bold text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.6)]">
-                                            ${remainingAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} remaining
+                                            {currency}{remainingAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} remaining
                                         </span>
                                     </div>
                                 </div>

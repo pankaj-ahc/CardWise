@@ -31,6 +31,7 @@ import { format, addMonths } from 'date-fns';
 import { type Bill, type CardData } from '@/lib/types';
 import { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSettings } from '@/contexts/settings-context';
 
 const billFormSchema = z.object({
   cardId: z.string({ required_error: 'A card is required.' }).min(1, { message: 'Please select a card.' }),
@@ -52,6 +53,7 @@ interface AddEditBillDialogProps {
 }
 
 export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, cardId }: AddEditBillDialogProps) {
+  const { currency } = useSettings();
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
     defaultValues: {
@@ -172,7 +174,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount ($)</FormLabel>
+                  <FormLabel>Amount ({currency})</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" {...field} />
                   </FormControl>
