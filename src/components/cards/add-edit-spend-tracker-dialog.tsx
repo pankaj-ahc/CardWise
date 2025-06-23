@@ -1,0 +1,247 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { type SpendTracker } from '@/lib/types';
+import { useEffect } from 'react';
+
+const spendTrackerFormSchema = z.object({
+  name: z.string().min(2, { message: 'Tracker name is required.' }),
+  type: z.enum(['Annual', 'Quarterly', 'Monthly'], { required_error: 'A type is required.' }),
+  targetAmount: z.coerce.number().min(0, { message: 'Target amount must be positive.' }),
+  currentSpend: z.coerce.number().min(0, { message: 'Current spend must be positive.' }),
+  startDate: z.date({ required_error: 'A start date is required.' }),
+  endDate: z.date({ required_error: 'An end date is required.' }),
+});
+
+export type SpendTrackerFormValues = z.infer<typeof spendTrackerFormSchema>;
+
+interface AddEditSpendTrackerDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (tracker: SpendTrackerFormValues & { id?: string }) => void;
+  tracker?: SpendTracker;
+}
+
+export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker }: AddEditSpendTrackerDialogProps) {
+  const form = useForm<SpendTrackerFormValues>({
+    resolver: zodResolver(spendTrackerFormSchema),
+    defaultValues: {
+      name: '',
+      type: 'Quarterly',
+      targetAmount: 0,
+      currentSpend: 0,
+      startDate: new Date(),
+      endDate: new Date(),
+    },
+  });
+
+  useEffect(() => {
+    if (open) {
+      if (tracker) {
+        form.reset({
+          name: tracker.name,
+          type: tracker.type,
+          targetAmount: tracker.targetAmount,
+          currentSpend: tracker.currentSpend,
+          startDate: new Date(tracker.startDate),
+          endDate: new Date(tracker.endDate),
+        });
+      } else {
+        form.reset({
+          name: '',
+          type: 'Quarterly',
+          targetAmount: 0,
+          currentSpend: 0,
+          startDate: new Date(),
+          endDate: new Date(),
+        });
+      }
+    }
+  }, [tracker, open, form]);
+
+  function onSubmit(data: SpendTrackerFormValues) {
+    onSave({
+      id: tracker?.id,
+      ...data,
+    });
+    onOpenChange(false);
+  }
+
+  const title = tracker?.id ? 'Edit Spend Tracker' : 'Add New Spend Tracker';
+  const description = tracker?.id ? 'Update the details of your spend tracker.' : 'Add a new tracker to monitor your spending goals.';
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tracker Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Sign-up Bonus" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Annual">Annual</SelectItem>
+                      <SelectItem value="Quarterly">Quarterly</SelectItem>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-4">
+                 <FormField
+                  control={form.control}
+                  name="targetAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Target ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="currentSpend"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+             <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Start Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>End Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit">Save Tracker</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
