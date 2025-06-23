@@ -26,6 +26,7 @@ import { useCards } from '@/contexts/card-context';
 import { useSettings } from '@/contexts/settings-context';
 import { getBankLogo } from '@/lib/banks';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 export default function CardDetailLayout({
   children,
@@ -116,9 +117,12 @@ export default function CardDetailLayout({
       
         <Card>
             <CardHeader className="flex flex-row items-start gap-4 space-y-0">
-                <div className="p-4 rounded-lg flex items-center justify-center" style={{ backgroundColor: card.color }}>
+                <div 
+                    className={cn("p-4 rounded-lg flex items-center justify-center", bankLogo ? "bg-card" : "")}
+                    style={!bankLogo ? { backgroundColor: card.color } : {}}
+                >
                      {bankLogo ? (
-                        <Image src={bankLogo} alt={`${card.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} className="rounded-md bg-white p-1" />
+                        <Image src={bankLogo} alt={`${card.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
                     ) : (
                         <CreditCard className="w-8 h-8 text-white"/>
                     )}

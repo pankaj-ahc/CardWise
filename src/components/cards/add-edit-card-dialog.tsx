@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { type CardData, CARD_VARIANTS, type CardVariant } from '@/lib/types';
-import { useEffect, type FC, type SVGProps } from 'react';
+import { useEffect, type FC, type SVGProps, useMemo } from 'react';
 import { useSettings } from '@/contexts/settings-context';
 import { Combobox } from '@/components/ui/combobox';
 import { popularBanks } from '@/lib/banks';
@@ -99,7 +99,7 @@ const cardFormSchema = z.object({
   cardVariant: z.enum(CARD_VARIANTS),
   dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
   annualFee: z.coerce.number().min(0),
-  color: z.string().regex(/^hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\)$/, { message: "Must be a valid HSL color string, e.g., hsl(217, 89%, 61%)" }),
+  color: z.string().regex(/^hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\)$/, { message: "Must be a valid HSL color string, e.g., hsl(217, 89%, 61%)" }).optional(),
 });
 
 export type CardFormValues = z.infer<typeof cardFormSchema>;
@@ -153,9 +153,27 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
   }, [card, open, form]);
 
   function onSubmit(data: CardFormValues) {
+    const isKnownBank = popularBanks.some(b => b.name.toLowerCase() === data.bankName.toLowerCase());
+    
+    let finalColor: string;
+
+    if (isKnownBank) {
+      // For known banks, use a default color. This will be used as a fallback or ignored if the logo loads.
+      finalColor = 'hsl(217, 89%, 61%)';
+    } else {
+      // If it's a custom bank, either keep its existing color or generate a new one.
+      if (card && card.bankName === data.bankName && card.color) {
+        finalColor = card.color;
+      } else {
+        const hue = Math.floor(Math.random() * 360);
+        finalColor = `hsl(${hue}, 70%, 50%)`;
+      }
+    }
+
     onSave({
       id: card?.id,
       ...data,
+      color: finalColor,
     });
     onOpenChange(false);
   }
@@ -270,19 +288,6 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                   <FormLabel>Annual Fee ({currency})</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color (HSL)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="hsl(217, 89%, 61%)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

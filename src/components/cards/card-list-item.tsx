@@ -25,6 +25,7 @@ import { addMonths, addYears, startOfDay, addDays, format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
 import { getBankLogo } from '@/lib/banks';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface CardListItemProps {
   card: CardData;
@@ -80,9 +81,12 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
   return (
     <Card className="flex flex-col">
         <CardHeader className="flex flex-row items-start gap-4 space-y-0">
-            <div className="p-3 rounded-lg" style={{ backgroundColor: card.color }}>
+            <div 
+              className={cn("p-3 rounded-lg flex items-center justify-center", bankLogo ? "bg-card" : "")}
+              style={!bankLogo ? { backgroundColor: card.color } : {}}
+            >
                 {bankLogo ? (
-                     <Image src={bankLogo} alt={`${card.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} className="rounded-sm bg-white p-0.5" />
+                     <Image src={bankLogo} alt={`${card.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} />
                 ) : (
                     <CreditCard className="w-6 h-6 text-white"/>
                 )}
