@@ -27,11 +27,6 @@ import { useSettings } from '@/contexts/settings-context';
 import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 
-// This is necessary for static export of dynamic routes.
-export async function generateStaticParams() {
-  return [];
-}
-
 export default function CardDetailLayout({
   children,
 }: Readonly<{
