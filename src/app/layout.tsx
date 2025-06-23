@@ -7,6 +7,20 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'CardWise',
   description: 'Manage your credit card bills with ease.',
+  manifest: '/manifest.json',
+  applicationName: 'CardWise',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'CardWise',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  themeColor: '#3B82F6',
+  icons: {
+    apple: '/icons/icon-192x192.png',
+  },
 };
 
 export default function RootLayout({
