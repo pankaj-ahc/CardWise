@@ -1,6 +1,6 @@
 'use client';
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Line, LineChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCards } from '@/contexts/card-context';
 import { format } from 'date-fns';
@@ -10,26 +10,24 @@ export function ExpenseChart() {
   const { cards } = useCards();
   const { currency } = useSettings();
 
-  const monthlyData = cards.flatMap(card => 
+  const monthlyTotals = cards.flatMap(card => 
       card.bills.map(bill => ({
-          month: format(new Date(bill.dueDate), 'MMM'),
-          [card.cardName]: bill.amount,
-          fill: card.color
+          // Use 'yyyy-MM' for sorting, and create a label 'MMM yy'
+          monthKey: format(new Date(bill.dueDate), 'yyyy-MM'),
+          monthLabel: format(new Date(bill.dueDate), 'MMM yy'),
+          cardName: card.cardName,
+          amount: bill.amount,
+          color: card.color
       }))
-  ).reduce((acc, curr) => {
-      const monthEntry = acc.find(item => item.month === curr.month);
-      if (monthEntry) {
-          const cardName = Object.keys(curr).find(k => k !== 'month' && k !== 'fill');
-          if (cardName) {
-            monthEntry[cardName] = (monthEntry[cardName] || 0) + curr[cardName];
-          }
-      } else {
-          acc.push({ ...curr });
+  ).reduce((acc, { monthKey, monthLabel, cardName, amount }) => {
+      if (!acc[monthKey]) {
+          acc[monthKey] = { month: monthLabel, monthKey: monthKey };
       }
+      acc[monthKey][cardName] = (acc[monthKey][cardName] || 0) + amount;
       return acc;
-  }, [] as any[]);
+  }, {} as Record<string, any>);
 
-  const cardNames = cards.map(c => c.cardName);
+  const monthlyData = Object.values(monthlyTotals).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
 
   return (
     <Card className="col-span-1 lg:col-span-2">
@@ -39,7 +37,8 @@ export function ExpenseChart() {
       </CardHeader>
       <CardContent className="pl-2">
         <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={monthlyData}>
+            <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                     dataKey="month"
                     stroke="hsl(var(--muted-foreground))"
@@ -55,17 +54,25 @@ export function ExpenseChart() {
                     tickFormatter={(value) => `${currency}${value}`}
                 />
                 <Tooltip
-                    cursor={{fill: 'hsl(var(--card))'}}
                     contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         borderColor: 'hsl(var(--border))',
                         borderRadius: 'var(--radius)',
                     }}
                 />
+                <Legend />
                 {cards.map((card) => (
-                    <Bar key={card.id} dataKey={card.cardName} fill={card.color} radius={[4, 4, 0, 0]} stackId="a" />
+                    <Line 
+                        key={card.id} 
+                        type="monotone" 
+                        dataKey={card.cardName} 
+                        stroke={card.color}
+                        strokeWidth={2}
+                        dot={{ r: 4, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                    />
                 ))}
-            </BarChart>
+            </LineChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
