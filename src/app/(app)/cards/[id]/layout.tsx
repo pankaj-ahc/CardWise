@@ -118,13 +118,13 @@ export default function CardDetailLayout({
         <Card>
             <CardHeader className="flex flex-row items-start gap-4 space-y-0">
                 <div 
-                    className={cn("p-4 rounded-lg flex items-center justify-center", bankLogo ? "bg-card" : "")}
+                    className={cn("w-16 h-16 rounded-lg flex items-center justify-center", bankLogo ? "bg-card" : "")}
                     style={!bankLogo ? { backgroundColor: card.color } : {}}
                 >
                      {bankLogo ? (
-                        <Image src={bankLogo} alt={`${card.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
+                        <Image src={bankLogo} alt={`${card.bankName} logo`} width={48} height={48} style={{ objectFit: 'contain' }} />
                     ) : (
-                        <CreditCard className="w-8 h-8 text-white"/>
+                        <CreditCard className="w-10 h-10 text-white"/>
                     )}
                 </div>
                 <div className="flex-grow">

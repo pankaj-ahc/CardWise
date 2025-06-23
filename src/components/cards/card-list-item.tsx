@@ -82,13 +82,13 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
     <Card className="flex flex-col">
         <CardHeader className="flex flex-row items-start gap-4 space-y-0">
             <div 
-              className={cn("p-3 rounded-lg flex items-center justify-center", bankLogo ? "bg-card" : "")}
+              className={cn("w-12 h-12 rounded-lg flex items-center justify-center", bankLogo ? "bg-card" : "")}
               style={!bankLogo ? { backgroundColor: card.color } : {}}
             >
                 {bankLogo ? (
-                     <Image src={bankLogo} alt={`${card.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} />
+                     <Image src={bankLogo} alt={`${card.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
                 ) : (
-                    <CreditCard className="w-6 h-6 text-white"/>
+                    <CreditCard className="w-8 h-8 text-white"/>
                 )}
             </div>
             <div className="flex-grow">

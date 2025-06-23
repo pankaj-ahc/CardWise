@@ -9,6 +9,7 @@ import { format, differenceInDays, parseISO } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
 import Image from 'next/image';
 import { getBankLogo } from '@/lib/banks';
+import { cn } from '@/lib/utils';
 
 export function UpcomingBills() {
   const { cards } = useCards();
@@ -46,17 +47,16 @@ export function UpcomingBills() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {upcomingBills.map((bill) => (
+          {upcomingBills.map((bill) => {
+            const bankLogo = getBankLogo(bill.bankName);
+            return (
             <div key={bill.id} className="flex items-center">
-              <div className="p-2 rounded-lg mr-4 flex items-center justify-center w-10 h-10" style={{ backgroundColor: bill.color }}>
-                {(() => {
-                    const bankLogo = getBankLogo(bill.bankName);
-                    return bankLogo ? (
-                        <Image src={bankLogo} alt={`${bill.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} className="rounded-sm bg-white p-0.5" />
-                    ) : (
-                        <CreditCard className="h-6 w-6 text-white" />
-                    )
-                })()}
+               <div className={cn("rounded-lg mr-4 flex items-center justify-center w-10 h-10", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
+                {bankLogo ? (
+                    <Image src={bankLogo} alt={`${bill.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
+                ) : (
+                    <CreditCard className="h-6 w-6 text-white" />
+                )}
               </div>
               <div className="flex-grow">
                 <p className="text-sm font-medium leading-none">{bill.cardName} ending in {bill.last4Digits}</p>
@@ -69,7 +69,7 @@ export function UpcomingBills() {
                 {getUrgencyBadge(bill.dueDate)}
               </div>
             </div>
-          ))}
+          )})}
            {upcomingBills.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
                 <p>No upcoming bills. You're all caught up!</p>

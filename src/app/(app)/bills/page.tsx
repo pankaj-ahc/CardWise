@@ -26,6 +26,7 @@ import {
 import { useSettings } from '@/contexts/settings-context';
 import Image from 'next/image';
 import { getBankLogo } from '@/lib/banks';
+import { cn } from '@/lib/utils';
 
 type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string; bankName: string; color: string; };
 
@@ -117,19 +118,18 @@ export default function BillsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayedBills.map(bill => (
+                {displayedBills.map(bill => {
+                  const bankLogo = getBankLogo(bill.bankName);
+                  return (
                   <TableRow key={bill.id} data-state={bill.paid ? 'inactive' : 'active'}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg flex items-center justify-center w-10 h-10" style={{ backgroundColor: bill.color }}>
-                            {(() => {
-                                const bankLogo = getBankLogo(bill.bankName);
-                                return bankLogo ? (
-                                    <Image src={bankLogo} alt={`${bill.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} className="rounded-sm bg-white p-0.5" />
-                                ) : (
-                                    <CreditCard className="w-6 h-6 text-white"/>
-                                )
-                            })()}
+                        <div className={cn("rounded-lg flex items-center justify-center w-10 h-10", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
+                            {bankLogo ? (
+                                <Image src={bankLogo} alt={`${bill.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} />
+                            ) : (
+                                <CreditCard className="w-6 h-6 text-white"/>
+                            )}
                         </div>
                         <div>
                             <div className="font-medium">{bill.cardName}</div>
@@ -186,7 +186,7 @@ export default function BillsPage() {
                       </AlertDialog>
                     </TableCell>
                   </TableRow>
-                ))}
+                )})}
               </TableBody>
             </Table>
         )
