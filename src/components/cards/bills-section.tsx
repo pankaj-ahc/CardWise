@@ -29,9 +29,9 @@ interface BillsSectionProps {
 }
 
 export function BillsSection({ cardId, bills }: BillsSectionProps) {
-    const { addBill, updateBill, deleteBill } = useCards();
+    const { cards, addBill, updateBill, deleteBill } = useCards();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingBill, setEditingBill] = useState<Bill | undefined>(undefined);
+    const [editingBill, setEditingBill] = useState<(Bill & { cardId: string; }) | undefined>(undefined);
     const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
 
     const handleSaveBill = (data: BillFormValues & { id?: string }) => {
@@ -45,7 +45,7 @@ export function BillsSection({ cardId, bills }: BillsSectionProps) {
     };
 
     const openEditDialog = (bill: Bill) => {
-        setEditingBill(bill);
+        setEditingBill({ ...bill, cardId });
         setIsDialogOpen(true);
     }
     
@@ -152,6 +152,8 @@ export function BillsSection({ cardId, bills }: BillsSectionProps) {
                 onOpenChange={setIsDialogOpen}
                 onSave={handleSaveBill}
                 bill={editingBill}
+                cards={cards}
+                cardId={cardId}
             />
         </>
     )

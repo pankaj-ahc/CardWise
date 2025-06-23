@@ -48,9 +48,10 @@ interface AddEditBillDialogProps {
   onSave: (bill: BillFormValues & { id?: string }) => void;
   bill?: Bill & { cardId?: string };
   cards: CardData[];
+  cardId?: string;
 }
 
-export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards }: AddEditBillDialogProps) {
+export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, cardId }: AddEditBillDialogProps) {
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
     defaultValues: {
@@ -76,7 +77,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards }: A
         });
       } else {
         form.reset({
-          cardId: '',
+          cardId: cardId || '',
           month: format(new Date(), 'MMMM yyyy'),
           amount: 0,
           dueDate: new Date(),
@@ -84,7 +85,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards }: A
         });
       }
     }
-  }, [bill, open, form]);
+  }, [bill, open, form, cardId]);
 
   useEffect(() => {
     if (open && !bill?.id && selectedCardId) {
@@ -135,7 +136,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards }: A
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Card</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!bill?.id}>
+                   <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value} disabled={!!bill?.id || !!cardId}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a card" />
