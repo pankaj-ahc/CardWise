@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Edit, MoreHorizontal, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, addMonths, subMonths, addYears, subYears, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, getQuarter } from 'date-fns';
+import { format, addMonths, addYears, startOfDay, addDays, getQuarter } from 'date-fns';
 
 interface SpendTrackerItemProps {
     tracker: SpendTracker;
@@ -26,16 +26,7 @@ interface SpendTrackerItemProps {
     onDelete: () => void;
 }
 
-// Helper to get the start of the period containing a given date
-const getPeriodStartForDate = (date: Date, type: SpendTracker['type']): Date => {
-    switch (type) {
-        case 'Monthly': return startOfMonth(date);
-        case 'Quarterly': return startOfQuarter(date);
-        case 'Annual': return startOfYear(date);
-    }
-};
-
-// Helper to get the start of the next/previous period
+// Helper to get the start of the next/previous period relative to a given start date
 const getAdjacentPeriodStart = (currentPeriodStart: Date, type: SpendTracker['type'], direction: 'next' | 'prev'): Date => {
     const d = direction === 'next' ? 1 : -1;
     switch (type) {
@@ -45,14 +36,36 @@ const getAdjacentPeriodStart = (currentPeriodStart: Date, type: SpendTracker['ty
     }
 };
 
+// Helper to get the end of a period
 const getPeriodEnd = (periodStart: Date, type: SpendTracker['type']): Date => {
-    switch (type) {
-        case 'Monthly': return endOfMonth(periodStart);
-        case 'Quarterly': return endOfQuarter(periodStart);
-        case 'Annual': return endOfYear(periodStart);
+    const nextPeriodStart = getAdjacentPeriodStart(periodStart, type, 'next');
+    return addDays(nextPeriodStart, -1);
+};
+
+
+// Helper to get the start of the period that contains a given date, relative to the tracker's start date
+const getPeriodStartForDate = (targetDate: Date, trackerStartDate: Date, type: SpendTracker['type']): Date => {
+    let periodStart = startOfDay(new Date(trackerStartDate));
+    const tDate = startOfDay(targetDate);
+
+    if (tDate < periodStart) {
+        // Target is before the tracker start. Iterate backwards.
+        while (periodStart > tDate) {
+            periodStart = getAdjacentPeriodStart(periodStart, type, 'prev');
+        }
+        return periodStart;
+    } else {
+        // Target is after the tracker start. Iterate forwards.
+        let nextPeriodStart = getAdjacentPeriodStart(periodStart, type, 'next');
+        while (tDate >= nextPeriodStart) {
+            periodStart = nextPeriodStart;
+            nextPeriodStart = getAdjacentPeriodStart(periodStart, type, 'next');
+        }
+        return periodStart;
     }
 };
 
+// Custom label for the period
 const getPeriodLabel = (periodStart: Date, type: SpendTracker['type']): string => {
     switch (type) {
         case 'Monthly': return format(periodStart, 'MMMM yyyy');
@@ -63,15 +76,20 @@ const getPeriodLabel = (periodStart: Date, type: SpendTracker['type']): string =
 
 
 export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrackerItemProps) {
-    const initialPeriodStart = useMemo(() => getPeriodStartForDate(new Date(), tracker.type), [tracker.type]);
+    const trackerStartDate = useMemo(() => new Date(tracker.startDate), [tracker.startDate]);
+    
+    const initialPeriodStart = useMemo(() => getPeriodStartForDate(new Date(), trackerStartDate, tracker.type), [trackerStartDate, tracker.type]);
     const [viewedPeriodStart, setViewedPeriodStart] = useState<Date>(initialPeriodStart);
 
     const { periodEnd, periodLabel, currentSpend } = useMemo(() => {
-        const end = getPeriodEnd(viewedPeriodStart, tracker.type);
+        const start = startOfDay(viewedPeriodStart);
+        const end = getPeriodEnd(start, tracker.type);
+
         const spend = bills
             .filter(bill => {
-                const billDueDate = new Date(bill.dueDate);
-                return billDueDate >= viewedPeriodStart && billDueDate <= end;
+                const billDueDate = startOfDay(new Date(bill.dueDate));
+                // Inclusive of start and end dates
+                return billDueDate >= start && billDueDate <= end;
             })
             .reduce((sum, bill) => sum + bill.amount, 0);
         

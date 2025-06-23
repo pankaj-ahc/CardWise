@@ -26,7 +26,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { format, startOfYear, startOfQuarter, startOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 import { type SpendTracker } from '@/lib/types';
 import { useEffect } from 'react';
 
@@ -57,8 +57,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
     },
   });
 
-  const trackerType = form.watch('type');
-
   useEffect(() => {
     if (open) {
       if (tracker) {
@@ -73,35 +71,11 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
           name: '',
           type: 'Quarterly',
           targetAmount: 0,
-          startDate: startOfQuarter(new Date()),
+          startDate: new Date(),
         });
       }
     }
   }, [tracker, open, form]);
-
-  useEffect(() => {
-    if (!open || !!tracker?.id) return; // Only applies for new trackers.
-
-    const now = new Date();
-    let start;
-
-    switch(trackerType) {
-        case 'Monthly':
-            start = startOfMonth(now);
-            break;
-        case 'Quarterly':
-            start = startOfQuarter(now);
-            break;
-        case 'Annual':
-            start = startOfYear(now);
-            break;
-        default:
-            return;
-    }
-
-    form.setValue('startDate', start, { shouldValidate: true });
-
-  }, [trackerType, open, tracker, form]);
 
   function onSubmit(data: SpendTrackerFormValues) {
     onSave({
