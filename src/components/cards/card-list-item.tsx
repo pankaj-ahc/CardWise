@@ -184,7 +184,7 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
       <CardFooter className="flex justify-between items-center">
         <Badge variant="outline">Due Date: {card.dueDate}th</Badge>
         <Button asChild variant="secondary" size="sm">
-          <Link href={`/cards/${card.id}`}>View Details</Link>
+          <Link href={`/cards/detail?id=${card.id}`}>View Details</Link>
         </Button>
       </CardFooter>
     </Card>
