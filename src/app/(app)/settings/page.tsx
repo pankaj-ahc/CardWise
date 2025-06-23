@@ -3,10 +3,22 @@
 import { useTheme } from 'next-themes';
 import { useSettings } from '@/contexts/settings-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Sun, Moon, Laptop } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const currencies = [
+  { value: '$', label: 'USD - US Dollar' },
+  { value: '€', label: 'EUR - Euro' },
+  { value: '£', label: 'GBP - British Pound' },
+  { value: '¥', label: 'JPY - Japanese Yen' },
+  { value: '₹', label: 'INR - Indian Rupee' },
+  { value: 'A$', label: 'AUD - Australian Dollar' },
+  { value: 'C$', label: 'CAD - Canadian Dollar' },
+  { value: 'CHF', label: 'CHF - Swiss Franc' },
+  { value: 'CN¥', label: 'CNY - Chinese Yuan' },
+];
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -64,16 +76,21 @@ export default function SettingsPage() {
               </RadioGroup>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="currency">Currency Symbol</Label>
-              <Input
-                id="currency"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="max-w-xs"
-                maxLength={5}
-              />
+              <Label htmlFor="currency">Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="max-w-xs" id="currency">
+                  <SelectValue placeholder="Select a currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.label} value={c.value}>
+                       {c.label} ({c.value})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-sm text-muted-foreground">
-                This symbol will be used to display monetary values across the app.
+                This will be used to display monetary values across the app.
               </p>
             </div>
           </CardContent>
