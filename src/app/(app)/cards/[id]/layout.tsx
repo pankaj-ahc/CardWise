@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useCards } from '@/contexts/card-context';
 import { useSettings } from '@/contexts/settings-context';
+import { getBankLogo } from '@/lib/banks';
+import Image from 'next/image';
 
 export default function CardDetailLayout({
   children,
@@ -55,6 +57,8 @@ export default function CardDetailLayout({
   if (loading || !card) {
     return <div className="flex-1 p-8">Loading card details...</div>;
   }
+  
+  const bankLogo = getBankLogo(card.bankName);
 
   const handleSaveCard = (data: CardFormValues & { id?: string }) => {
     if (data.id) {
@@ -112,8 +116,12 @@ export default function CardDetailLayout({
       
         <Card>
             <CardHeader className="flex flex-row items-start gap-4 space-y-0">
-                <div className="p-4 rounded-lg" style={{ backgroundColor: card.color }}>
-                    <CreditCard className="w-8 h-8 text-white"/>
+                <div className="p-4 rounded-lg flex items-center justify-center" style={{ backgroundColor: card.color }}>
+                     {bankLogo ? (
+                        <Image src={bankLogo} alt={`${card.bankName} logo`} width={32} height={32} style={{ objectFit: 'contain' }} className="rounded-md bg-white p-1" />
+                    ) : (
+                        <CreditCard className="w-8 h-8 text-white"/>
+                    )}
                 </div>
                 <div className="flex-grow">
                     <CardTitle className="text-2xl font-headline">{card.cardName}</CardTitle>

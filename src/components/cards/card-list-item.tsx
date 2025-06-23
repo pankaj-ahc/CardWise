@@ -23,6 +23,8 @@ import {
 import React from 'react';
 import { addMonths, addYears, startOfDay, addDays, format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
+import { getBankLogo } from '@/lib/banks';
+import Image from 'next/image';
 
 interface CardListItemProps {
   card: CardData;
@@ -73,12 +75,17 @@ const getPeriodStartForDate = (targetDate: Date, trackerStartDate: Date, type: S
 export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
     const { currency } = useSettings();
     const nextBill = card.bills.find(b => !b.paid);
+    const bankLogo = getBankLogo(card.bankName);
 
   return (
     <Card className="flex flex-col">
         <CardHeader className="flex flex-row items-start gap-4 space-y-0">
             <div className="p-3 rounded-lg" style={{ backgroundColor: card.color }}>
-                <CreditCard className="w-6 h-6 text-white"/>
+                {bankLogo ? (
+                     <Image src={bankLogo} alt={`${card.bankName} logo`} width={24} height={24} style={{ objectFit: 'contain' }} className="rounded-sm bg-white p-0.5" />
+                ) : (
+                    <CreditCard className="w-6 h-6 text-white"/>
+                )}
             </div>
             <div className="flex-grow">
                 <CardTitle className="font-headline">{card.cardName}</CardTitle>

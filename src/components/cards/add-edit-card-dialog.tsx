@@ -24,6 +24,8 @@ import { Input } from '@/components/ui/input';
 import { type CardData } from '@/lib/types';
 import { useEffect } from 'react';
 import { useSettings } from '@/contexts/settings-context';
+import { Combobox } from '@/components/ui/combobox';
+import { popularBanks } from '@/lib/banks';
 
 const cardFormSchema = z.object({
   cardName: z.string().min(2, { message: 'Card name must be at least 2 characters.' }),
@@ -92,6 +94,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
   const title = card ? 'Edit Card' : 'Add New Card';
   const description = card ? 'Update the details of your card.' : 'Fill in the information for your new credit card.';
 
+  const bankOptions = popularBanks.map(bank => ({ value: bank.name, label: bank.name }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -119,11 +122,18 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
               control={form.control}
               name="bankName"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Bank Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Chase" {...field} />
-                  </FormControl>
+                   <FormControl>
+                     <Combobox
+                        options={bankOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select a bank"
+                        searchPlaceholder="Search bank or type custom..."
+                        emptyPlaceholder="Bank not found."
+                      />
+                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
