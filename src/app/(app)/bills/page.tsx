@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Edit, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useCards } from '@/contexts/card-context';
 import { type CardData, type Bill } from '@/lib/types';
 import { AddEditBillDialog, type BillFormValues } from '@/components/cards/add-edit-bill-dialog';
@@ -12,13 +12,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits: string };
 
 export default function BillsPage() {
-  const { cards, addBill, updateBill, toggleBillPaidStatus, loading } = useCards();
+  const { cards, addBill, updateBill, toggleBillPaidStatus, deleteBill, loading } = useCards();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
+  const [deletingBillInfo, setDeletingBillInfo] = useState<{ cardId: string; billId: string } | null>(null);
 
   const handleOpenAddDialog = () => {
     setEditingBill(undefined);
@@ -50,10 +62,20 @@ export default function BillsPage() {
     setEditingBill(undefined);
   }
   
-  const allUnpaidBills: BillWithCard[] = cards
+  const handleDeleteBill = () => {
+    if (deletingBillInfo) {
+      deleteBill(deletingBillInfo.cardId, deletingBillInfo.billId);
+      setDeletingBillInfo(null);
+    }
+  }
+
+  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  const displayedBills: BillWithCard[] = cards
     .flatMap(card => 
       card.bills
-        .filter(bill => !bill.paid)
+        .filter(bill => 
+          !bill.paid || (bill.paymentDate && new Date(bill.paymentDate) > fifteenMinutesAgo)
+        )
         .map(bill => ({
           ...bill,
           cardId: card.id,
@@ -62,6 +84,7 @@ export default function BillsPage() {
         }))
     )
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
 
   const renderContent = () => {
     if (loading) {
@@ -74,7 +97,7 @@ export default function BillsPage() {
         )
     }
 
-    if (allUnpaidBills.length > 0) {
+    if (displayedBills.length > 0) {
         return (
             <Table>
               <TableHeader>
@@ -88,8 +111,8 @@ export default function BillsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allUnpaidBills.map(bill => (
-                  <TableRow key={bill.id}>
+                {displayedBills.map(bill => (
+                  <TableRow key={bill.id} data-state={bill.paid ? 'inactive' : 'active'}>
                     <TableCell className="font-medium">
                         <div>{bill.cardName}</div>
                         <div className="text-sm text-muted-foreground">•••• {bill.last4Digits}</div>
@@ -105,19 +128,42 @@ export default function BillsPage() {
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4"/>
-                              </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
-                              </DropdownMenuItem>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
+                       <AlertDialog>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4"/>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem 
+                                        onSelect={(e) => { e.preventDefault(); setDeletingBillInfo({ cardId: bill.cardId, billId: bill.id }); }}
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete this bill record.
+                                  </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                  <AlertDialogCancel onClick={() => setDeletingBillInfo(null)}>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleDeleteBill} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -128,7 +174,7 @@ export default function BillsPage() {
 
     return (
         <div className="text-center text-muted-foreground py-8">
-            All caught up! No unpaid bills.
+            All caught up! No unpaid or recently paid bills.
         </div>
     )
   }
@@ -144,8 +190,8 @@ export default function BillsPage() {
 
       <Card>
         <CardHeader>
-            <CardTitle>All Unpaid Bills</CardTitle>
-            <CardDescription>A consolidated view of all your upcoming credit card payments.</CardDescription>
+            <CardTitle>Upcoming & Recent Bills</CardTitle>
+            <CardDescription>A consolidated view of your credit card payments. Recently paid bills are shown for 15 minutes.</CardDescription>
         </CardHeader>
         <CardContent>
           {renderContent()}

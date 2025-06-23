@@ -159,7 +159,7 @@ export function CardProvider({ children }: { children: ReactNode }) {
         return { 
           ...bill, 
           paid: isPaid, 
-          paymentDate: isPaid ? format(new Date(), 'yyyy-MM-dd') : undefined
+          paymentDate: isPaid ? new Date().toISOString() : undefined
         };
       }
       return bill;
