@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -151,13 +152,11 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                         
                         return (
                             <div key={tracker.id}>
-                                <div className="mb-1 flex justify-between items-baseline">
-                                    <span className="text-sm font-medium text-muted-foreground">{tracker.name}</span>
-                                    <span className="text-sm font-semibold">
-                                        ${currentSpend.toLocaleString('en-US', { minimumFractionDigits: 2 })} / ${tracker.targetAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                    </span>
-                                </div>
+                                <p className="text-xs font-medium text-muted-foreground mb-1 truncate">{tracker.name}</p>
                                 <Progress value={progressValue} />
+                                <p className="text-xs text-muted-foreground text-right mt-1">
+                                    ${Math.max(0, tracker.targetAmount - currentSpend).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} remaining
+                                </p>
                             </div>
                         )
                     })}
