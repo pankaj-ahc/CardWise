@@ -34,7 +34,6 @@ const spendTrackerFormSchema = z.object({
   name: z.string().min(2, { message: 'Tracker name is required.' }),
   type: z.enum(['Annual', 'Quarterly', 'Monthly'], { required_error: 'A type is required.' }),
   targetAmount: z.coerce.number().min(0, { message: 'Target amount must be positive.' }),
-  currentSpend: z.coerce.number().min(0, { message: 'Current spend must be positive.' }),
   startDate: z.date({ required_error: 'A start date is required.' }),
 });
 
@@ -54,7 +53,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
       name: '',
       type: 'Quarterly',
       targetAmount: 0,
-      currentSpend: 0,
       startDate: new Date(),
     },
   });
@@ -68,7 +66,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
           name: tracker.name,
           type: tracker.type,
           targetAmount: tracker.targetAmount,
-          currentSpend: tracker.currentSpend,
           startDate: new Date(tracker.startDate),
         });
       } else {
@@ -76,7 +73,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
           name: '',
           type: 'Quarterly',
           targetAmount: 0,
-          currentSpend: 0,
           startDate: startOfQuarter(new Date()),
         });
       }
@@ -162,34 +158,19 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-                 <FormField
-                  control={form.control}
-                  name="targetAmount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Target ($)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="currentSpend"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current ($)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            </div>
+            <FormField
+              control={form.control}
+              name="targetAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target ($)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
              <FormField
               control={form.control}
               name="startDate"

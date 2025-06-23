@@ -130,7 +130,7 @@ export default function CardDetailPage() {
                 <BillsSection cardId={card.id} bills={card.bills} />
             </TabsContent>
             <TabsContent value="trackers" className="space-y-4">
-                <SpendTrackerSection cardId={card.id} trackers={card.spendTrackers} />
+                <SpendTrackerSection cardId={card.id} trackers={card.spendTrackers} bills={card.bills} />
             </TabsContent>
         </Tabs>
 

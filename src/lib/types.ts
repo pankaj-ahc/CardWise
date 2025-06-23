@@ -13,7 +13,6 @@ export interface SpendTracker {
   name: string;
   type: 'Annual' | 'Quarterly' | 'Monthly';
   targetAmount: number;
-  currentSpend: number;
   startDate: string;
 }
 
