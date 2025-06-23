@@ -19,8 +19,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import React, { useMemo } from 'react';
-import { addMonths, addYears, startOfDay, addDays } from 'date-fns';
+import React from 'react';
+import { addMonths, addYears, startOfDay, addDays, format } from 'date-fns';
 
 interface CardListItemProps {
   card: CardData;
@@ -70,25 +70,6 @@ const getPeriodStartForDate = (targetDate: Date, trackerStartDate: Date, type: S
 
 export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
     const nextBill = card.bills.find(b => !b.paid);
-    const mainTracker = card.spendTrackers[0];
-
-    const currentSpend = useMemo(() => {
-      if (!mainTracker) return 0;
-
-      const trackerStartDate = new Date(mainTracker.startDate);
-      const currentPeriodStart = getPeriodStartForDate(new Date(), trackerStartDate, mainTracker.type);
-      const currentPeriodEnd = getPeriodEnd(currentPeriodStart, mainTracker.type);
-
-      return card.bills
-          .filter(bill => {
-              const billDueDate = startOfDay(new Date(bill.dueDate));
-              return billDueDate >= currentPeriodStart && billDueDate <= currentPeriodEnd;
-          })
-          .reduce((sum, bill) => sum + bill.amount, 0);
-    }, [mainTracker, card.bills]);
-
-    const progressValue = mainTracker && mainTracker.targetAmount > 0 ? (currentSpend / mainTracker.targetAmount) * 100 : 0;
-
 
   return (
     <Card className="flex flex-col">
@@ -144,23 +125,42 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                  <div>
                     <div className="mb-1 flex justify-between items-baseline">
                         <span className="text-sm font-medium text-muted-foreground">Next Bill</span>
-                        <span className="text-lg font-bold">${nextBill.amount.toLocaleString()}</span>
+                        <span className="text-lg font-bold">${nextBill.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                     </div>
-                    <p className="text-right text-sm text-muted-foreground">Due on {nextBill.dueDate.split('T')[0]}</p>
+                    <p className="text-right text-sm text-muted-foreground">Due on {format(new Date(nextBill.dueDate), 'MMM dd, yyyy')}</p>
                 </div>
             ) : (
                 <div className="text-center py-4 text-sm text-muted-foreground">No upcoming bills</div>
             )}
 
-            {mainTracker && (
-                <div>
-                    <div className="mb-1 flex justify-between items-baseline">
-                        <span className="text-sm font-medium text-muted-foreground">{mainTracker.name}</span>
-                        <span className="text-sm font-semibold">
-                            ${currentSpend.toLocaleString()} / ${mainTracker.targetAmount.toLocaleString()}
-                        </span>
-                    </div>
-                    <Progress value={progressValue} />
+            {card.spendTrackers.length > 0 && (
+                <div className="border-t pt-4 space-y-4">
+                    {card.spendTrackers.map((tracker) => {
+                        const trackerStartDate = new Date(tracker.startDate);
+                        const currentPeriodStart = getPeriodStartForDate(new Date(), trackerStartDate, tracker.type);
+                        const currentPeriodEnd = getPeriodEnd(currentPeriodStart, tracker.type);
+                        
+                        const currentSpend = card.bills
+                            .filter(bill => {
+                                const billDueDate = startOfDay(new Date(bill.dueDate));
+                                return billDueDate >= currentPeriodStart && billDueDate <= currentPeriodEnd;
+                            })
+                            .reduce((sum, bill) => sum + bill.amount, 0);
+
+                        const progressValue = tracker.targetAmount > 0 ? (currentSpend / tracker.targetAmount) * 100 : 0;
+                        
+                        return (
+                            <div key={tracker.id}>
+                                <div className="mb-1 flex justify-between items-baseline">
+                                    <span className="text-sm font-medium text-muted-foreground">{tracker.name}</span>
+                                    <span className="text-sm font-semibold">
+                                        ${currentSpend.toLocaleString('en-US', { minimumFractionDigits: 2 })} / ${tracker.targetAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                <Progress value={progressValue} />
+                            </div>
+                        )
+                    })}
                 </div>
             )}
         </div>
