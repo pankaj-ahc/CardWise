@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { format } from 'date-fns';
+import { format, endOfMonth, endOfQuarter, endOfYear } from 'date-fns';
 
 interface SpendTrackerSectionProps {
     cardId: string;
@@ -60,6 +60,18 @@ export function SpendTrackerSection({ cardId, trackers }: SpendTrackerSectionPro
             setDeletingTrackerId(null);
         }
     }
+
+    const getDisplayEndDate = (startDateStr: string, type: SpendTracker['type']) => {
+        const startDate = new Date(startDateStr);
+        let endDate: Date;
+        switch(type) {
+            case 'Monthly': endDate = endOfMonth(startDate); break;
+            case 'Quarterly': endDate = endOfQuarter(startDate); break;
+            case 'Annual': endDate = endOfYear(startDate); break;
+            default: endDate = new Date();
+        }
+        return format(endDate, 'MMM dd, yyyy');
+      }
 
     return (
         <>
@@ -128,7 +140,7 @@ export function SpendTrackerSection({ cardId, trackers }: SpendTrackerSectionPro
                             <Progress value={(tracker.currentSpend / tracker.targetAmount) * 100} />
                             <div className="flex justify-between items-end mt-1 text-xs text-muted-foreground">
                                 <span>Start: {format(new Date(tracker.startDate), 'MMM dd, yyyy')}</span>
-                                <span>End: {format(new Date(tracker.endDate), 'MMM dd, yyyy')}</span>
+                                <span>End: {getDisplayEndDate(tracker.startDate, tracker.type)}</span>
                             </div>
                         </div>
                     )) : (

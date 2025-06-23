@@ -26,7 +26,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { format, startOfYear, endOfYear, startOfQuarter, endOfQuarter, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfYear, startOfQuarter, startOfMonth } from 'date-fns';
 import { type SpendTracker } from '@/lib/types';
 import { useEffect } from 'react';
 
@@ -36,7 +36,6 @@ const spendTrackerFormSchema = z.object({
   targetAmount: z.coerce.number().min(0, { message: 'Target amount must be positive.' }),
   currentSpend: z.coerce.number().min(0, { message: 'Current spend must be positive.' }),
   startDate: z.date({ required_error: 'A start date is required.' }),
-  endDate: z.date({ required_error: 'An end date is required.' }),
 });
 
 export type SpendTrackerFormValues = z.infer<typeof spendTrackerFormSchema>;
@@ -57,7 +56,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
       targetAmount: 0,
       currentSpend: 0,
       startDate: new Date(),
-      endDate: new Date(),
     },
   });
 
@@ -72,7 +70,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
           targetAmount: tracker.targetAmount,
           currentSpend: tracker.currentSpend,
           startDate: new Date(tracker.startDate),
-          endDate: new Date(tracker.endDate),
         });
       } else {
         form.reset({
@@ -81,7 +78,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
           targetAmount: 0,
           currentSpend: 0,
           startDate: startOfQuarter(new Date()),
-          endDate: endOfQuarter(new Date()),
         });
       }
     }
@@ -91,27 +87,23 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
     if (!open || !!tracker?.id) return; // Only applies for new trackers.
 
     const now = new Date();
-    let start, end;
+    let start;
 
     switch(trackerType) {
         case 'Monthly':
             start = startOfMonth(now);
-            end = endOfMonth(now);
             break;
         case 'Quarterly':
             start = startOfQuarter(now);
-            end = endOfQuarter(now);
             break;
         case 'Annual':
             start = startOfYear(now);
-            end = endOfYear(now);
             break;
         default:
             return;
     }
 
     form.setValue('startDate', start, { shouldValidate: true });
-    form.setValue('endDate', end, { shouldValidate: true });
 
   }, [trackerType, open, tracker, form]);
 
@@ -204,40 +196,6 @@ export function AddEditSpendTrackerDialog({ open, onOpenChange, onSave, tracker 
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Start Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>End Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>

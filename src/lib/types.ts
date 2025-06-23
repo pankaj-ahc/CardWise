@@ -15,7 +15,6 @@ export interface SpendTracker {
   targetAmount: number;
   currentSpend: number;
   startDate: string;
-  endDate: string;
 }
 
 export interface CardData {

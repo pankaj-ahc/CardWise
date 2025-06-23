@@ -5,7 +5,7 @@ import { type CardData, type Bill, type SpendTracker } from '@/lib/types';
 import { type CardFormValues } from '@/components/cards/add-edit-card-dialog';
 import type { BillFormValues } from '@/components/cards/add-edit-bill-dialog';
 import type { SpendTrackerFormValues } from '@/components/cards/add-edit-spend-tracker-dialog';
-import { format } from 'date-fns';
+import { format, endOfMonth, endOfQuarter, endOfYear, startOfMonth, startOfQuarter, startOfYear, addMonths, addYears } from 'date-fns';
 import { useAuth } from './auth-context';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, Timestamp } from 'firebase/firestore';
@@ -27,6 +27,23 @@ const convertTimestampsToISO = (data: any): any => {
     }
     return data;
 };
+
+const getNextPeriodStartDate = (currentStartDate: Date, type: SpendTracker['type']): Date => {
+    switch (type) {
+        case 'Monthly': return startOfMonth(addMonths(currentStartDate, 1));
+        case 'Quarterly': return startOfQuarter(addMonths(currentStartDate, 3));
+        case 'Annual': return startOfYear(addYears(currentStartDate, 1));
+    }
+};
+
+const getPeriodEndDate = (startDate: Date, type: SpendTracker['type']): Date => {
+    switch (type) {
+        case 'Monthly': return endOfMonth(startDate);
+        case 'Quarterly': return endOfQuarter(startDate);
+        case 'Annual': return endOfYear(startDate);
+    }
+};
+
 
 interface CardContextType {
   cards: CardData[];
@@ -58,12 +75,66 @@ export function CardProvider({ children }: { children: ReactNode }) {
           const cardsCollectionRef = collection(db, 'users', user.uid, 'cards');
           const q = query(cardsCollectionRef, orderBy('cardName'));
           const querySnapshot = await getDocs(q);
-          const fetchedCards = querySnapshot.docs.map(doc => (
+          
+          let fetchedCards = querySnapshot.docs.map(doc => (
             convertTimestampsToISO({ id: doc.id, ...doc.data() }) as CardData
           ));
+
+          const updatePromises: Promise<void>[] = [];
+          const cardsToUpdate: {cardId: string, updatedTrackers: SpendTracker[]}[] = [];
+
+          for (const card of fetchedCards) {
+              if (!card.spendTrackers || card.spendTrackers.length === 0) continue;
+
+              let cardHasChanges = false;
+              const updatedTrackers = card.spendTrackers.map(tracker => {
+                  if (!tracker.startDate) return tracker;
+
+                  let currentStartDate = new Date(tracker.startDate);
+                  let currentEndDate = getPeriodEndDate(currentStartDate, tracker.type);
+                  const now = new Date();
+                  let hasChanged = false;
+
+                  while (now > currentEndDate) {
+                      currentStartDate = getNextPeriodStartDate(currentStartDate, tracker.type);
+                      currentEndDate = getPeriodEndDate(currentStartDate, tracker.type);
+                      hasChanged = true;
+                  }
+
+                  if (hasChanged) {
+                      cardHasChanges = true;
+                      return {
+                          ...tracker,
+                          startDate: format(currentStartDate, 'yyyy-MM-dd'),
+                          currentSpend: 0,
+                      };
+                  }
+                  
+                  return tracker;
+              });
+
+              if (cardHasChanges) {
+                  cardsToUpdate.push({ cardId: card.id, updatedTrackers });
+              }
+          }
+          
+          if(cardsToUpdate.length > 0) {
+              for (const { cardId, updatedTrackers } of cardsToUpdate) {
+                const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
+                updatePromises.push(updateDoc(cardDocRef, { spendTrackers: updatedTrackers }));
+              }
+              await Promise.all(updatePromises);
+              
+              // Re-fetch data after updates
+              const updatedSnapshot = await getDocs(q);
+              fetchedCards = updatedSnapshot.docs.map(doc => (
+                  convertTimestampsToISO({ id: doc.id, ...doc.data() }) as CardData
+              ));
+          }
+          
           setCards(fetchedCards);
       } catch (error) {
-          console.error("Error fetching cards:", error);
+          console.error("Error fetching or updating cards:", error);
       } finally {
           setLoading(false);
       }
@@ -175,7 +246,6 @@ export function CardProvider({ children }: { children: ReactNode }) {
         ...data,
         id: `tracker-${new Date().getTime()}`,
         startDate: format(data.startDate, 'yyyy-MM-dd'),
-        endDate: format(data.endDate, 'yyyy-MM-dd'),
     };
     const updatedTrackers = [...card.spendTrackers, newTracker];
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
@@ -191,8 +261,7 @@ export function CardProvider({ children }: { children: ReactNode }) {
       tracker.id === trackerId ? { 
           ...tracker, 
           ...data, 
-          startDate: format(data.startDate, 'yyyy-MM-dd'), 
-          endDate: format(data.endDate, 'yyyy-MM-dd') 
+          startDate: format(data.startDate, 'yyyy-MM-dd'),
       } : tracker
     );
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
