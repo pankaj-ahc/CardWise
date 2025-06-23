@@ -85,7 +85,7 @@ export function ExpenseChart() {
                 />
                 <Legend onClick={handleLegendClick} formatter={formatLegend} />
                 {cards.map((card) => (
-                    !hiddenCards[card.cardName] && <Line 
+                    <Line 
                         key={card.id} 
                         type="monotone" 
                         dataKey={card.cardName} 
@@ -93,6 +93,7 @@ export function ExpenseChart() {
                         strokeWidth={2}
                         dot={{ r: 4, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
                         activeDot={{ r: 6, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                        hide={!!hiddenCards[card.cardName]}
                     />
                 ))}
             </LineChart>
