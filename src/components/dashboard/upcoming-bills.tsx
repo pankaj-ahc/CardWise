@@ -30,8 +30,7 @@ export function UpcomingBills() {
         .filter(bill => !bill.paid)
         .map(bill => ({ ...bill, cardName: card.cardName, last4Digits: card.last4Digits, color: card.color, bankName: card.bankName }))
     )
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    .slice(0, 5);
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
     setUpcomingBills(sortedBills);
 
@@ -103,7 +102,7 @@ export function UpcomingBills() {
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
         <CardTitle>Upcoming Bills</CardTitle>
-        <CardDescription>Your next 5 outstanding bills. Pay them on time!</CardDescription>
+        <CardDescription>All your outstanding bills. Pay them on time!</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
