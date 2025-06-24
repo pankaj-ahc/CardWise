@@ -140,13 +140,13 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                     <CreditCard className="w-8 h-8 text-white"/>
                 )}
             </div>
-            <div className="flex-grow">
+            <div className="flex-grow min-w-0">
                 <CardTitle className="font-headline">{card.cardName}</CardTitle>
                 <CardDescription>{card.bankName} {card.last4Digits && `•••• ${card.last4Digits}`}</CardDescription>
                 {card.perks && card.perks.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                         {card.perks.map(perk => (
-                            <Badge key={perk} variant="secondary">{perk}</Badge>
+                            <Badge key={perk} variant="secondary" className="px-1.5 py-px text-[10px] font-normal">{perk}</Badge>
                         ))}
                     </div>
                 )}
