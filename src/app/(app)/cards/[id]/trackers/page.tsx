@@ -1,43 +1,21 @@
 
-'use client';
+import CardTrackersClientPage from './client-page';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { useCards } from '@/contexts/card-context';
-import { SpendTrackerSection } from '@/components/cards/spend-tracker-section';
-import { type CardData } from '@/lib/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+// The 'generateStaticParams' function is required for Next.js to be able to
+// statically generate all the dynamic routes for this page at build time.
+//
+// NOTE: This function cannot be fully implemented because your card data is
+// stored in Firestore and fetched on the client after a user authenticates.
+// For a true static export, this data would need to be available at build time.
+//
+// By returning an empty array, we are telling Next.js that there are no pages
+// to generate at build time. They will be generated on-demand when first visited.
+export async function generateStaticParams() {
+    return [];
+}
 
-export default function CardTrackersPage() {
-  const params = useParams<{ id: string }>();
-  const { getCard, loading, cards } = useCards();
-  const [card, setCard] = useState<CardData | undefined>(undefined);
-
-  useEffect(() => {
-    if (!loading && params.id) {
-      const foundCard = getCard(params.id);
-      setCard(foundCard);
-    }
-  }, [loading, params.id, getCard, cards]);
-
-
-  if (loading || !card) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-1/4" />
-          <Skeleton className="h-4 w-1/2" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6 pt-6">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return <SpendTrackerSection cardId={card.id} trackers={card.spendTrackers} bills={card.bills} />;
+export default function CardTrackersPage({ params }: { params: { id: string } }) {
+  // This is now a Server Component. It receives the `id` from the URL `params`
+  // and passes it down to the client component that handles the data display.
+  return <CardTrackersClientPage cardId={params.id} />;
 }
