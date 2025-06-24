@@ -21,6 +21,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'app.brandmark.io',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
