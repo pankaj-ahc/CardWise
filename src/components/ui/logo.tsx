@@ -8,13 +8,13 @@ export const Logo = ({ className }: { className?: string }) => (
     aria-label="CardWise logo"
   >
     {/* Icon */}
-    <g transform="translate(5, 12)" fill="none" stroke="#f0b429" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        {/* Card */}
-        <rect x="0" y="10" width="60" height="35" rx="4" />
+    <g transform="translate(5, 8)" fill="#f0b429">
         {/* Hand */}
-        <path d="M45,45 C45,30 85,30 85,45 L85,60 L50,60 C40,60 45,50 45,45 Z" />
-        <path d="M53,32.5 L63,22.5" />
-        <path d="M63,32.5 L73,22.5" />
+        <path d="M10,62 C10,50 20,42 37.5,42 C55,42 65,50 65,62 L10,62Z" />
+        {/* Card */}
+        <g transform="rotate(-15 37.5 25)">
+            <rect x="12.5" y="10" width="50" height="30" rx="3" />
+        </g>
     </g>
 
     {/* Text */}
