@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
@@ -87,9 +88,9 @@ export function CardProvider({ children }: { children: ReactNode }) {
       if (!user) return;
       const newCard: Omit<CardData, 'id'> = {
           ...data,
+          perks: data.perks || [],
           bills: [],
           spendTrackers: [],
-          perks: [],
           billingCycleStartMonth: 'January',
           feeWaiverCriteria: 'N/A',
       };

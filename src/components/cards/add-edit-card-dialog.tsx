@@ -20,15 +20,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { type CardData, CARD_VARIANTS, type CardVariant } from '@/lib/types';
-import { useEffect, type FC, type SVGProps, useMemo } from 'react';
+import React, { useEffect, type FC, type SVGProps, useState } from 'react';
 import { useSettings } from '@/contexts/settings-context';
 import { Combobox } from '@/components/ui/combobox';
 import { popularBanks } from '@/lib/banks';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '../ui/badge';
+import { X } from 'lucide-react';
 
 // Simplified SVG components for logos
 const VisaLogo: FC<SVGProps<SVGSVGElement>> = (props) => (
@@ -100,6 +103,7 @@ const cardFormSchema = z.object({
   cardVariant: z.enum(CARD_VARIANTS),
   dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
   annualFee: z.coerce.number().min(0),
+  perks: z.array(z.string()).optional(),
   extraInfo: z.string().optional(),
 });
 
@@ -114,6 +118,8 @@ interface AddEditCardDialogProps {
 
 export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditCardDialogProps) {
   const { currency } = useSettings();
+  const [perkInput, setPerkInput] = useState('');
+
   const form = useForm<CardFormValues>({
     resolver: zodResolver(cardFormSchema),
     defaultValues: {
@@ -123,9 +129,12 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       cardVariant: 'Other',
       dueDate: 1,
       annualFee: 0,
+      perks: [],
       extraInfo: '',
     },
   });
+
+  const perks = form.watch('perks') || [];
 
   useEffect(() => {
     if (open) {
@@ -137,6 +146,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           cardVariant: card.cardVariant || 'Other',
           dueDate: card.dueDate,
           annualFee: card.annualFee,
+          perks: card.perks || [],
           extraInfo: card.extraInfo || '',
         });
       } else {
@@ -147,11 +157,26 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           cardVariant: 'Other',
           dueDate: 1,
           annualFee: 0,
+          perks: [],
           extraInfo: '',
         });
       }
+      setPerkInput('');
     }
   }, [card, open, form]);
+
+  const handleAddPerk = () => {
+    const trimmedPerk = perkInput.trim();
+    if (trimmedPerk && !perks.includes(trimmedPerk)) {
+      form.setValue('perks', [...perks, trimmedPerk]);
+      setPerkInput('');
+    }
+  };
+
+  const handleRemovePerk = (perkToRemove: string) => {
+    form.setValue('perks', perks.filter(p => p !== perkToRemove));
+  };
+
 
   function onSubmit(data: CardFormValues) {
     const isKnownBank = popularBanks.some(b => b.name.toLowerCase() === data.bankName.toLowerCase());
@@ -159,10 +184,8 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
     let finalColor: string;
 
     if (isKnownBank) {
-      // For known banks, use a default color. This will be used as a fallback or ignored if the logo loads.
       finalColor = 'hsl(217, 89%, 61%)';
     } else {
-      // If it's a custom bank, either keep its existing color or generate a new one.
       if (card && card.bankName === data.bankName && card.color) {
         finalColor = card.color;
       } else {
@@ -290,6 +313,50 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="perks"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Perks & Benefits</FormLabel>
+                   <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="e.g. 5% Cashback"
+                      value={perkInput}
+                      onChange={(e) => setPerkInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddPerk();
+                        }
+                      }}
+                    />
+                    <Button type="button" variant="outline" onClick={handleAddPerk}>
+                      Add
+                    </Button>
+                  </div>
+                  <FormDescription>
+                    Add unique benefits or rewards for this card.
+                  </FormDescription>
+                  <div className="flex flex-wrap gap-2 pt-2 min-h-[24px]">
+                    {perks.map((perk, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1 pl-2.5 pr-1 py-0.5">
+                        {perk}
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePerk(perk)}
+                          className="rounded-full hover:bg-muted-foreground/20 p-0.5"
+                          aria-label={`Remove ${perk}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
