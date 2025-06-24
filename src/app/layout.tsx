@@ -3,6 +3,15 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
+import { PT_Sans } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const ptSans = PT_Sans({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-pt-sans',
+})
 
 export const metadata: Metadata = {
   title: 'CardWise',
@@ -17,7 +26,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  themeColor: '#3B82F6',
+  themeColor: '#4285F4',
   icons: {
     apple: '/icons/icon-192x192.png',
   },
@@ -30,12 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={cn("font-body antialiased", ptSans.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"

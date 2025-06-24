@@ -3,7 +3,6 @@ import type {Config} from 'tailwindcss';
 export default {
   darkMode: ['class'],
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
@@ -17,8 +16,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['"Inter"', 'sans-serif'],
-        headline: ['"Inter"', 'sans-serif'],
+        body: ['var(--font-pt-sans)', 'sans-serif'],
+        headline: ['var(--font-pt-sans)', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
