@@ -3,14 +3,12 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/components/theme-provider';
-import { PT_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
-const ptSans = PT_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-pt-sans',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -39,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("font-body antialiased", ptSans.variable)}>
+      <body className={cn("font-body antialiased", inter.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
