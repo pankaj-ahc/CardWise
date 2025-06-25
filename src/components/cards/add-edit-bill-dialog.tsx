@@ -24,10 +24,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { format, addMonths } from 'date-fns';
+import { format, addMonths, subMonths } from 'date-fns';
 import { type Bill, type CardData } from '@/lib/types';
 import { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -66,6 +66,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   });
 
   const selectedCardId = form.watch('cardId');
+  const dueDateValue = form.watch('dueDate');
 
   useEffect(() => {
     if (open) {
@@ -113,6 +114,45 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
         }
     }
   }, [selectedCardId, open, bill, cards, form]);
+
+  useEffect(() => {
+    // This effect synchronizes the month field when the due date is changed manually.
+    if (dueDateValue) {
+        const statementMonth = format(addMonths(dueDateValue, -1), 'MMMM yyyy');
+        if (form.getValues('month') !== statementMonth) {
+            form.setValue('month', statementMonth, { shouldValidate: true });
+        }
+    }
+  }, [dueDateValue, form]);
+
+  const handleMonthChange = (direction: 'next' | 'prev') => {
+    const currentMonthStr = form.getValues('month');
+    try {
+      const [monthName, yearStr] = currentMonthStr.split(' ');
+      const year = parseInt(yearStr, 10);
+      const monthIndex = new Date(Date.parse(monthName + " 1, " + year)).getMonth();
+      
+      let currentStatementDate = new Date(year, monthIndex, 1);
+
+      if (isNaN(currentStatementDate.getTime())) {
+          console.error("Could not parse month string:", currentMonthStr);
+          return;
+      }
+
+      const newStatementDate = direction === 'next' ? addMonths(currentStatementDate, 1) : subMonths(currentStatementDate, 1);
+      
+      form.setValue('month', format(newStatementDate, 'MMMM yyyy'), { shouldValidate: true });
+      
+      const currentDueDate = form.getValues('dueDate');
+      const dayOfDueDate = new Date(currentDueDate).getDate();
+
+      const newDueDate = new Date(newStatementDate.getFullYear(), newStatementDate.getMonth() + 1, dayOfDueDate);
+      form.setValue('dueDate', newDueDate, { shouldValidate: true });
+
+    } catch (e) {
+        console.error("Error changing month:", e);
+    }
+  };
 
 
   function onSubmit(data: BillFormValues) {
@@ -166,7 +206,29 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                 <FormItem>
                   <FormLabel>Month</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. August 2024" {...field} />
+                    <div className="flex items-center justify-between rounded-md border">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            type="button"
+                            onClick={() => handleMonthChange('prev')}
+                            disabled={!selectedCardId}
+                            className="h-9 w-9"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="font-medium text-sm tabular-nums">{field.value}</span>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            type="button"
+                            onClick={() => handleMonthChange('next')}
+                            disabled={!selectedCardId}
+                            className="h-9 w-9"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
