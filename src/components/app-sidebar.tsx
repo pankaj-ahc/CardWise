@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { CreditCard, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-react';
+import { CreditCard, LayoutDashboard, LogOut, Settings, Wallet, Download } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { Separator } from './ui/separator';
 import { Logo } from './ui/logo';
+import { useState, useEffect } from 'react';
 
 
 const menuItems = [
@@ -32,6 +33,43 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setInstallPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Listen for the appinstalled event
+    const handleAppInstalled = () => {
+      // Clear the deferredPrompt so it can be garbage collected
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) {
+      return;
+    }
+    // Show the install prompt
+    await installPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await installPrompt.userChoice;
+    // We've used the prompt, and can't use it again, so clear it
+    setInstallPrompt(null);
+  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -73,6 +111,19 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
+        {installPrompt && (
+          <SidebarMenu className="pb-2">
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={handleInstallClick}
+                tooltip="Install App"
+              >
+                <Download />
+                <span>Install App</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
         <Separator className="mb-2"/>
         <div className="flex items-center gap-3">
           <Avatar>
