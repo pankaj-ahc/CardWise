@@ -30,7 +30,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { format, addMonths, subMonths } from 'date-fns';
 import { type Bill, type CardData } from '@/lib/types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSettings } from '@/contexts/settings-context';
 
@@ -55,6 +55,8 @@ interface AddEditBillDialogProps {
 
 export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, cardId }: AddEditBillDialogProps) {
   const { currency } = useSettings();
+  const [currentBill, setCurrentBill] = useState(bill);
+
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
     defaultValues: {
@@ -67,22 +69,26 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   });
 
   const selectedCardId = form.watch('cardId');
+  const selectedMonth = form.watch('month');
   const dueDateValue = form.watch('dueDate');
 
+  // Effect to initialize or reset the dialog's state when it opens or the initial `bill` prop changes.
   useEffect(() => {
     if (open) {
-      if (bill) {
+      const initialBill = bill;
+      setCurrentBill(initialBill);
+      if (initialBill) {
         form.reset({
-          cardId: bill.cardId,
-          month: bill.month,
-          amount: bill.amount,
-          dueDate: new Date(bill.dueDate),
-          paid: bill.paid,
+          cardId: initialBill.cardId,
+          month: initialBill.month,
+          amount: initialBill.amount,
+          dueDate: new Date(initialBill.dueDate),
+          paid: initialBill.paid,
         });
       } else {
         form.reset({
           cardId: cardId || '',
-          month: format(new Date(), 'MMMM yyyy'),
+          month: format(subMonths(new Date(), 1), 'MMMM yyyy'),
           amount: 0,
           dueDate: new Date(),
           paid: false,
@@ -91,8 +97,37 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
     }
   }, [bill, open, form, cardId]);
 
+  // Effect to find an existing bill and switch to "edit" mode automatically.
   useEffect(() => {
-    if (open && !bill?.id && selectedCardId) {
+      if (!open || !selectedCardId || !selectedMonth) return;
+
+      const card = cards.find(c => c.id === selectedCardId);
+      if (!card) return;
+
+      const existingBillForMonth = card.bills.find(b => b.month === selectedMonth);
+
+      if (existingBillForMonth) {
+          if (currentBill?.id !== existingBillForMonth.id) {
+              setCurrentBill({ ...existingBillForMonth, cardId: selectedCardId });
+              form.reset({
+                  cardId: selectedCardId,
+                  month: existingBillForMonth.month,
+                  amount: existingBillForMonth.amount,
+                  dueDate: new Date(existingBillForMonth.dueDate),
+                  paid: existingBillForMonth.paid,
+              });
+          }
+      } else {
+          if (currentBill) {
+              setCurrentBill(undefined);
+          }
+      }
+  }, [selectedCardId, selectedMonth, open, cards, form, currentBill]);
+
+
+  // Effect to auto-fill due date for a *new* bill when a card is selected.
+  useEffect(() => {
+    if (open && !bill?.id && !currentBill?.id && selectedCardId) {
         const card = cards.find(c => c.id === selectedCardId);
         if (card) {
             const latestBill = card.bills.length > 0
@@ -102,39 +137,34 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
             let nextDueDate: Date;
             if (latestBill) {
                 const lastDueDate = new Date(latestBill.dueDate);
-                // Calculate next month's due date based on the last bill's month and the card's specific due day.
                 nextDueDate = new Date(lastDueDate.getFullYear(), lastDueDate.getMonth() + 1, card.dueDate);
             } else {
                 const now = new Date();
-                // For the first bill, set it to next month, using the card's due day.
                 nextDueDate = new Date(now.getFullYear(), now.getMonth() + 1, card.dueDate);
             }
             
             form.setValue('dueDate', nextDueDate, { shouldValidate: true });
-            form.setValue('month', format(addMonths(nextDueDate, -1), 'MMMM yyyy'), { shouldValidate: true });
         }
     }
-  }, [selectedCardId, open, bill, cards, form]);
+  }, [selectedCardId, open, bill, cards, form, currentBill]);
 
+  // Effect to synchronize the month field when the due date is changed manually.
   useEffect(() => {
-    // This effect synchronizes the month field when the due date is changed manually.
-    if (dueDateValue) {
-        const statementMonth = format(addMonths(dueDateValue, -1), 'MMMM yyyy');
-        if (form.getValues('month') !== statementMonth) {
-            form.setValue('month', statementMonth, { shouldValidate: true });
+    if (dueDateValue && open) {
+        const statementMonthDate = subMonths(dueDateValue, 1);
+        const statementMonthString = format(statementMonthDate, 'MMMM yyyy');
+        if (form.getValues('month') !== statementMonthString) {
+            form.setValue('month', statementMonthString, { shouldValidate: true });
         }
     }
-  }, [dueDateValue, form]);
+  }, [dueDateValue, form, open]);
+
 
   const handleMonthChange = (direction: 'next' | 'prev') => {
     const currentMonthStr = form.getValues('month');
     try {
-      const [monthName, yearStr] = currentMonthStr.split(' ');
-      const year = parseInt(yearStr, 10);
-      const monthIndex = new Date(Date.parse(monthName + " 1, " + year)).getMonth();
+      const currentStatementDate = new Date(`1 ${currentMonthStr}`);
       
-      let currentStatementDate = new Date(year, monthIndex, 1);
-
       if (isNaN(currentStatementDate.getTime())) {
           console.error("Could not parse month string:", currentMonthStr);
           return;
@@ -142,12 +172,11 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
 
       const newStatementDate = direction === 'next' ? addMonths(currentStatementDate, 1) : subMonths(currentStatementDate, 1);
       
-      form.setValue('month', format(newStatementDate, 'MMMM yyyy'), { shouldValidate: true });
-      
+      // Also update the due date to stay in sync
       const currentDueDate = form.getValues('dueDate');
       const dayOfDueDate = new Date(currentDueDate).getDate();
-
       const newDueDate = new Date(newStatementDate.getFullYear(), newStatementDate.getMonth() + 1, dayOfDueDate);
+      
       form.setValue('dueDate', newDueDate, { shouldValidate: true });
 
     } catch (e) {
@@ -158,14 +187,14 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
 
   function onSubmit(data: BillFormValues) {
     onSave({
-      id: bill?.id,
+      id: currentBill?.id,
       ...data,
     });
     onOpenChange(false);
   }
 
-  const title = bill?.id ? 'Edit Bill' : 'Add New Bill';
-  const description = bill?.id ? 'Update the details of your monthly bill.' : 'Add a new bill record for a card.';
+  const title = currentBill?.id ? 'Edit Bill' : 'Add New Bill';
+  const description = currentBill?.id ? 'A bill for this month already exists. You are editing it.' : 'Add a new bill record for a card.';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
