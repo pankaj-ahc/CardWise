@@ -101,16 +101,16 @@ export const cardVariantList: readonly CardVariantInfo[] = [
 const cardFormSchema = z.object({
   cardName: z.string().min(2, { message: 'Card name must be at least 2 characters.' }),
   bankName: z.string().min(2, { message: 'Bank name must be at least 2 characters.' }),
-  last4Digits: z.string().max(4, { message: 'Cannot be more than 4 characters.' }).optional(),
+  last4Digits: z.string().optional(),
   cardVariant: z.enum(CARD_VARIANTS),
   dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
   statementDate: z.preprocess(
-      (val) => String(val).trim() === '' ? undefined : Number(val),
+      (val) => (val === null || val === undefined || String(val).trim() === '') ? undefined : Number(val),
       z.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}).optional()
   ),
   annualFee: z.coerce.number().min(0),
   creditLimit: z.preprocess(
-      (val) => String(val).trim() === '' ? undefined : Number(val),
+      (val) => (val === null || val === undefined || String(val).trim() === '') ? undefined : Number(val),
       z.number().min(0).optional()
   ),
   perks: z.array(z.string()).optional(),
@@ -209,11 +209,8 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
         finalColor = `hsl(${hue}, 70%, 50%)`;
       }
     }
-
+    
     const saveData = { ...data };
-    if (saveData.last4Digits) {
-        saveData.last4Digits = saveData.last4Digits.slice(-4);
-    }
 
     onSave({
       id: card?.id,
@@ -233,15 +230,15 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       <DialogContent
         className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto"
         onPointerDownOutside={(e) => {
-           // Prevent closing on clicking outside the content
            const target = e.target as HTMLElement;
            if (target.closest('[data-radix-popper-content-wrapper]')) {
                e.preventDefault();
+           } else {
+                e.preventDefault();
            }
         }}
         onEscapeKeyDown={(e) => {
-          // Prevent closing with the Escape key
-          e.preventDefault();
+            e.preventDefault();
         }}
       >
         <DialogHeader>
