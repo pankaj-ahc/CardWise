@@ -1,9 +1,8 @@
-
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export const Logo = ({ className }: { className?: string }) => (
-  <div className={cn("flex items-center gap-2", className)} aria-label="CardWise logo">
+  <div className={cn("flex items-center justify-center gap-2", className)} aria-label="CardWise logo">
     <svg
       width="40"
       height="40"

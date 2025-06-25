@@ -30,7 +30,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center space-y-4">
           <Logo className="w-64 h-auto" />
-          <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline pt-4">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-headline pt-4 text-center">
             Welcome
           </h1>
           <p className="text-center text-muted-foreground">
