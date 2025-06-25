@@ -103,8 +103,8 @@ export function CardProvider({ children }: { children: ReactNode }) {
           feeWaiverCriteria: 'N/A',
       };
       const cardsCollectionRef = collection(db, 'users', user.uid, 'cards');
-      await addDoc(cardsCollectionRef, newCard);
-      await fetchCards();
+      const docRef = await addDoc(cardsCollectionRef, newCard);
+      setCards(prev => [...prev, { ...newCard, id: docRef.id }].sort((a,b) => a.cardName.localeCompare(b.cardName)));
   };
 
   const updateCard = async (id: string, data: Partial<CardFormValues & { color?: string }>) => {
@@ -119,19 +119,19 @@ export function CardProvider({ children }: { children: ReactNode }) {
       
       const cardDocRef = doc(db, 'users', user.uid, 'cards', id);
       await updateDoc(cardDocRef, updateDataForFirestore);
-      await fetchCards();
+      setCards(prev => prev.map(c => c.id === id ? { ...c, ...data } as CardData : c).sort((a,b) => a.cardName.localeCompare(b.cardName)));
   };
 
   const deleteCard = async (id: string) => {
       if (!user) return;
       const cardDocRef = doc(db, 'users', user.uid, 'cards', id);
       await deleteDoc(cardDocRef);
-      await fetchCards();
+      setCards(prev => prev.filter(c => c.id !== id));
   };
 
   const addBill = async (cardId: string, data: BillFormValues) => {
       if (!user) return;
-      const card = getCard(cardId);
+      const card = cards.find(c => c.id === cardId);
       if (!card) return;
       const newBill: Bill = {
           ...data,
@@ -141,34 +141,34 @@ export function CardProvider({ children }: { children: ReactNode }) {
       const updatedBills = [...card.bills, newBill].sort((a,b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
       const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
       await updateDoc(cardDocRef, { bills: updatedBills });
-      await fetchCards();
+      setCards(prev => prev.map(c => c.id === cardId ? { ...c, bills: updatedBills } : c));
   };
   
   const updateBill = async (cardId: string, billId: string, data: BillFormValues) => {
       if (!user) return;
-      const card = getCard(cardId);
+      const card = cards.find(c => c.id === cardId);
       if (!card) return;
       const updatedBills = card.bills.map(bill =>
         bill.id === billId ? { ...bill, ...data, dueDate: format(data.dueDate, 'yyyy-MM-dd') } : bill
       ).sort((a,b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
       const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
       await updateDoc(cardDocRef, { bills: updatedBills });
-      await fetchCards();
+      setCards(prev => prev.map(c => c.id === cardId ? { ...c, bills: updatedBills } : c));
   };
 
   const deleteBill = async (cardId: string, billId: string) => {
       if (!user) return;
-      const card = getCard(cardId);
+      const card = cards.find(c => c.id === cardId);
       if (!card) return;
       const updatedBills = card.bills.filter(bill => bill.id !== billId);
       const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
       await updateDoc(cardDocRef, { bills: updatedBills });
-      await fetchCards();
+      setCards(prev => prev.map(c => c.id === cardId ? { ...c, bills: updatedBills } : c));
   };
 
   const toggleBillPaidStatus = async (cardId: string, billId: string) => {
     if (!user) return;
-    const card = getCard(cardId);
+    const card = cards.find(c => c.id === cardId);
     if (!card) return;
     const updatedBills = card.bills.map(b => {
       if (b.id === billId) {
@@ -186,12 +186,12 @@ export function CardProvider({ children }: { children: ReactNode }) {
     });
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
     await updateDoc(cardDocRef, { bills: updatedBills });
-    await fetchCards();
+    setCards(prev => prev.map(c => c.id === cardId ? { ...c, bills: updatedBills } : c));
   };
 
   const addSpendTracker = async (cardId: string, data: SpendTrackerFormValues) => {
     if (!user) return;
-    const card = getCard(cardId);
+    const card = cards.find(c => c.id === cardId);
     if (!card) return;
     const newTracker: SpendTracker = {
         id: `tracker-${new Date().getTime()}`,
@@ -203,12 +203,12 @@ export function CardProvider({ children }: { children: ReactNode }) {
     const updatedTrackers = [...card.spendTrackers, newTracker];
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
     await updateDoc(cardDocRef, { spendTrackers: updatedTrackers });
-    await fetchCards();
+    setCards(prev => prev.map(c => c.id === cardId ? { ...c, spendTrackers: updatedTrackers } : c));
   };
 
   const updateSpendTracker = async (cardId: string, trackerId: string, data: SpendTrackerFormValues) => {
     if (!user) return;
-    const card = getCard(cardId);
+    const card = cards.find(c => c.id === cardId);
     if (!card) return;
     const updatedTrackers = card.spendTrackers.map(tracker =>
       tracker.id === trackerId ? { 
@@ -221,17 +221,17 @@ export function CardProvider({ children }: { children: ReactNode }) {
     );
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
     await updateDoc(cardDocRef, { spendTrackers: updatedTrackers });
-    await fetchCards();
+    setCards(prev => prev.map(c => c.id === cardId ? { ...c, spendTrackers: updatedTrackers } : c));
   };
 
   const deleteSpendTracker = async (cardId: string, trackerId: string) => {
     if (!user) return;
-    const card = getCard(cardId);
+    const card = cards.find(c => c.id === cardId);
     if (!card) return;
     const updatedTrackers = card.spendTrackers.filter(tracker => tracker.id !== trackerId);
     const cardDocRef = doc(db, 'users', user.uid, 'cards', cardId);
     await updateDoc(cardDocRef, { spendTrackers: updatedTrackers });
-    await fetchCards();
+    setCards(prev => prev.map(c => c.id === cardId ? { ...c, spendTrackers: updatedTrackers } : c));
   };
 
   const contextValue = { cards, loading, getCard, addCard, updateCard, deleteCard, addBill, updateBill, deleteBill, toggleBillPaidStatus, addSpendTracker, updateSpendTracker, deleteSpendTracker };
