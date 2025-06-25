@@ -224,22 +224,11 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
   const bankOptions = popularBanks.map(bank => ({ value: bank.name, label: bank.name }));
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      // Only allow closing via the 'X' button or save button
-      if (!isOpen) {
-        return;
-      }
-      onOpenChange(isOpen);
-    }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => {
-          // We allow escape if the combobox is open, to close it
-          const isComboboxOpen = document.querySelector('[data-radix-popper-content-wrapper][style*="--radix-popper-transform-origin"]');
-          if (!isComboboxOpen) {
-            e.preventDefault();
-          }
+        onInteractOutside={(e) => {
+          e.preventDefault();
         }}
       >
         <DialogHeader>
@@ -272,9 +261,9 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                         options={bankOptions}
                         value={field.value}
                         onChange={field.onChange}
-                        placeholder="Select a bank"
+                        placeholder="Select or type a bank"
                         searchPlaceholder="Search bank..."
-                        emptyPlaceholder="Bank not found."
+                        emptyPlaceholder="Bank not found. Add a new one."
                       />
                    </FormControl>
                   <FormMessage />

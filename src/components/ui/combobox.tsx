@@ -38,12 +38,14 @@ export function Combobox({
   options,
   value,
   onChange,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
-  emptyPlaceholder = "No option found.",
+  placeholder = "Select or type a bank",
+  searchPlaceholder = "Search bank...",
+  emptyPlaceholder = "Bank not found. You can add a new one.",
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
+  // This is the important part for allowing custom values. The display value is either
+  // a label from the options, or the raw value itself if it's not in the options.
   const selectedLabel = options.find((option) => option.value.toLowerCase() === value?.toLowerCase())?.label ?? value
 
   return (
@@ -53,7 +55,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between font-normal"
         >
           <span className="truncate">
             {selectedLabel || placeholder}
@@ -62,9 +64,16 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command>
+        <Command
+          filter={(value, search) => {
+            if (value.toLowerCase().includes(search.toLowerCase())) return 1
+            return 0
+          }}
+        >
           <CommandInput
             placeholder={searchPlaceholder}
+            value={value}
+            onValueChange={onChange}
           />
           <CommandList>
             <CommandEmpty>{emptyPlaceholder}</CommandEmpty>
@@ -96,3 +105,4 @@ export function Combobox({
     </Popover>
   )
 }
+
