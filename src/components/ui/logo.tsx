@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
@@ -10,17 +11,20 @@ export const Logo = ({ className }: { className?: string }) => (
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="h-full w-auto"
-      data-ai-hint="logo credit card checkmark"
+      data-ai-hint="logo letter c checkmark"
     >
-      <rect x="2" y="5" width="20" height="14" rx="2" className="fill-primary" />
-      <rect x="5" y="9" width="4" height="3" rx="0.5" className="fill-primary-foreground opacity-50" />
-      <path
-        d="M14 11l2 2 4-4"
-        className="stroke-primary-foreground"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+        <path
+            d="M16 8C16 4.68629 13.3137 2 10 2C6.68629 2 4 4.68629 4 8V16C4 19.3137 6.68629 22 10 22C13.3137 22 16 19.3137 16 16"
+            className="stroke-primary"
+            strokeWidth="2"
+        />
+        <path
+            d="M12 12L14.5 14.5L20 9"
+            className="stroke-accent"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
     </svg>
     <div style={{ fontFamily: 'Inter, sans-serif' }} className="text-2xl font-medium leading-none">
       <span className="text-primary">Card</span>
