@@ -17,24 +17,21 @@ export function MonthSelector({ value, currentDate, onMonthChange, onDateChange,
 
   const handleMonthChange = (direction: 'next' | 'prev') => {
     try {
-      // The statement month is the month *before* the due date.
-      const currentStatementDate = subMonths(currentDate, 1);
-
-      if (isNaN(currentStatementDate.getTime())) {
-          console.error("Could not parse date from currentDate prop:", currentDate);
-          return;
+      if (!currentDate || isNaN(currentDate.getTime())) {
+        console.error("MonthSelector received an invalid date:", currentDate);
+        return;
       }
       
-      const newStatementDate = direction === 'next' ? addMonths(currentStatementDate, 1) : subMonths(currentStatementDate, 1);
+      const newDueDate = direction === 'next' 
+        ? addMonths(currentDate, 1) 
+        : subMonths(currentDate, 1);
+
+      const newStatementMonth = subMonths(newDueDate, 1);
       
-      // Update the month string field in the parent form
-      onMonthChange(format(newStatementDate, 'MMMM yyyy'));
-      
-      // Also update the due date field in the parent form
-      const dayOfDueDate = currentDate.getDate();
-      const newDueDate = new Date(newStatementDate.getFullYear(), newStatementDate.getMonth() + 1, dayOfDueDate);
-      
+      // Update the parent form's state. It's important to update the date first
+      // so that any subsequent calculations based on it are correct.
       onDateChange(newDueDate);
+      onMonthChange(format(newStatementMonth, 'MMMM yyyy'));
 
     } catch (e) {
         console.error("Error changing month:", e);
