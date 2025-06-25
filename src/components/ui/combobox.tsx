@@ -49,7 +49,7 @@ export function Combobox({
   const selectedLabel = options.find((option) => option.value.toLowerCase() === value?.toLowerCase())?.label ?? value
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover modal={true} open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
