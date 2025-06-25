@@ -1,4 +1,5 @@
-import type {Metadata} from 'next';
+
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/auth-context';
@@ -24,10 +25,13 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  themeColor: '#4285F4',
   icons: {
     apple: '/icons/icon-192x192.png',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#4285F4',
 };
 
 export default function RootLayout({
