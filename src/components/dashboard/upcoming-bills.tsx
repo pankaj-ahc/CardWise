@@ -7,7 +7,7 @@ import { CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format, differenceInDays } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
-import { getBankAbbreviation, getBankLogo } from '@/lib/banks';
+import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -77,9 +77,9 @@ export function UpcomingBills() {
               )}
             </div>
             <div className="flex-grow">
-              <p className="text-sm font-medium leading-none">{`${bill.cardName} (${getBankAbbreviation(bill.bankName)})`} {bill.last4Digits && `ending in ${bill.last4Digits.slice(-4)}`}</p>
+              <p className="text-sm font-medium leading-none">{`${bill.cardName}`} {bill.last4Digits && `•••• ${bill.last4Digits.slice(-4)}`}</p>
               <p className="text-sm text-muted-foreground">
-                Due on {format(new Date(bill.dueDate), 'MMM dd, yyyy')}
+                {bill.bankName} • Due on {format(new Date(bill.dueDate), 'MMM dd, yyyy')}
               </p>
             </div>
             <div className="ml-auto text-right">

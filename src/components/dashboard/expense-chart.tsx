@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useCards } from '@/contexts/card-context';
 import { format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
-import { getBankAbbreviation } from '@/lib/banks';
 
 const chartColors = [
     'hsl(var(--chart-1))',
@@ -36,25 +35,25 @@ export function ExpenseChart() {
       card.bills
       .filter(bill => bill.amount > 0)
       .map(bill => ({
-          // Use 'yyyy-MM' for sorting, and create a label 'MMM yy'
           monthKey: format(new Date(bill.dueDate), 'yyyy-MM'),
           monthLabel: format(new Date(bill.dueDate), 'MMM yy'),
-          cardName: `${card.cardName} (${getBankAbbreviation(card.bankName)})`,
+          cardId: card.id,
           amount: bill.amount
       }))
-  ).reduce((acc, { monthKey, monthLabel, cardName, amount }) => {
+  ).reduce((acc, { monthKey, monthLabel, cardId, amount }) => {
       if (!acc[monthKey]) {
           acc[monthKey] = { month: monthLabel, monthKey: monthKey };
       }
-      acc[monthKey][cardName] = (acc[monthKey][cardName] || 0) + amount;
+      acc[monthKey][cardId] = (acc[monthKey][cardId] || 0) + amount;
       return acc;
   }, {} as Record<string, any>);
 
   const monthlyData = Object.values(monthlyTotals).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
   
   // Custom formatter for the legend. This will apply styles to inactive items.
-  const formatLegend = (value: string) => {
-    const isHidden = hiddenCards[value];
+  const formatLegend = (value: string, entry: any) => {
+    const { dataKey } = entry;
+    const isHidden = hiddenCards[dataKey];
     const style = {
       color: isHidden ? '#A0A0A0' : 'inherit',
       textDecoration: isHidden ? 'line-through' : 'none',
@@ -98,17 +97,17 @@ export function ExpenseChart() {
                 <Legend onClick={handleLegendClick} formatter={formatLegend} />
                 {cards.map((card, index) => {
                     const color = chartColors[index % chartColors.length];
-                    const cardDataKey = `${card.cardName} (${getBankAbbreviation(card.bankName)})`;
                     return (
                         <Line 
                             key={card.id} 
                             type="monotone" 
-                            dataKey={cardDataKey} 
+                            dataKey={card.id} 
+                            name={card.cardName}
                             stroke={color}
                             strokeWidth={2}
                             dot={{ r: 4, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
                             activeDot={{ r: 6, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                            hide={!!hiddenCards[cardDataKey]}
+                            hide={!!hiddenCards[card.id]}
                         />
                     )
                 })}

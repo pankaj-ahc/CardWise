@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useSettings } from '@/contexts/settings-context';
-import { getBankAbbreviation, getBankLogo } from '@/lib/banks';
+import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 
 type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits?: string; bankName: string; color: string; };
@@ -139,8 +139,8 @@ export default function BillsPage() {
                             )}
                         </div>
                         <div>
-                            <div className="font-medium">{`${bill.cardName} (${getBankAbbreviation(bill.bankName)})`}</div>
-                            {bill.last4Digits && <div className="text-sm text-muted-foreground">•••• {bill.last4Digits.slice(-4)}</div>}
+                            <div className="font-medium">{bill.cardName}</div>
+                            <div className="text-sm text-muted-foreground">{bill.bankName}{bill.last4Digits && ` •••• ${bill.last4Digits.slice(-4)}`}</div>
                         </div>
                       </div>
                     </TableCell>

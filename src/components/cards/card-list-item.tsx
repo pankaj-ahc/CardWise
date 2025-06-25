@@ -23,7 +23,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import { addMonths, addYears, startOfDay, addDays, format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
-import { getBankAbbreviation, getBankLogo } from '@/lib/banks';
+import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -141,8 +141,8 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                 )}
             </div>
             <div className="flex-grow min-w-0">
-                <CardTitle className="font-headline">{`${card.cardName} (${getBankAbbreviation(card.bankName)})`}</CardTitle>
-                <CardDescription>{card.last4Digits && `•••• ${card.last4Digits.slice(-4)}`}</CardDescription>
+                <CardTitle className="font-headline">{card.cardName}</CardTitle>
+                <CardDescription>{card.bankName}{card.last4Digits && ` •••• ${card.last4Digits.slice(-4)}`}</CardDescription>
                 {card.perks && card.perks.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                         {card.perks.map(perk => (
