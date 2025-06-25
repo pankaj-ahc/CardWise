@@ -150,7 +150,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                     <SelectContent>
                       {cards.map(card => (
                         <SelectItem key={card.id} value={card.id}>
-                          {card.cardName} (•••• {card.last4Digits})
+                          {`${card.cardName} (${card.bankName})`} {card.last4Digits && `(•••• ${card.last4Digits.slice(-4)})`}
                         </SelectItem>
                       ))}
                     </SelectContent>

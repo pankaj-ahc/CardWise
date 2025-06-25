@@ -141,8 +141,8 @@ export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
                 )}
             </div>
             <div className="flex-grow min-w-0">
-                <CardTitle className="font-headline">{card.cardName}</CardTitle>
-                <CardDescription>{card.bankName} {card.last4Digits && `•••• ${card.last4Digits}`}</CardDescription>
+                <CardTitle className="font-headline">{`${card.cardName} (${card.bankName})`}</CardTitle>
+                <CardDescription>{card.last4Digits && `•••• ${card.last4Digits.slice(-4)}`}</CardDescription>
                 {card.perks && card.perks.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                         {card.perks.map(perk => (

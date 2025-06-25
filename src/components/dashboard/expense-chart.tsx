@@ -27,7 +27,7 @@ export function ExpenseChart() {
           // Use 'yyyy-MM' for sorting, and create a label 'MMM yy'
           monthKey: format(new Date(bill.dueDate), 'yyyy-MM'),
           monthLabel: format(new Date(bill.dueDate), 'MMM yy'),
-          cardName: card.cardName,
+          cardName: `${card.cardName} (${card.bankName})`,
           amount: bill.amount,
           color: card.color
       }))
@@ -89,12 +89,12 @@ export function ExpenseChart() {
                     <Line 
                         key={card.id} 
                         type="monotone" 
-                        dataKey={card.cardName} 
+                        dataKey={`${card.cardName} (${card.bankName})`} 
                         stroke={card.color}
                         strokeWidth={2}
                         dot={{ r: 4, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
                         activeDot={{ r: 6, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                        hide={!!hiddenCards[card.cardName]}
+                        hide={!!hiddenCards[`${card.cardName} (${card.bankName})`]}
                     />
                 ))}
             </LineChart>

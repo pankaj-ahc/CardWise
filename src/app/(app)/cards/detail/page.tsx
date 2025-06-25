@@ -157,8 +157,8 @@ function CardDetailPageContent() {
             )}
           </div>
           <div className="flex-grow">
-            <CardTitle className="text-2xl font-headline">{card.cardName}</CardTitle>
-            <CardDescription>{card.bankName} {card.last4Digits && `•••• ${card.last4Digits}`}</CardDescription>
+            <CardTitle className="text-2xl font-headline">{`${card.cardName} (${card.bankName})`}</CardTitle>
+            <CardDescription>{card.last4Digits && `•••• ${card.last4Digits.slice(-4)}`}</CardDescription>
             <div className="mt-2 flex flex-wrap gap-2">
               {card.perks.map(perk => <Badge key={perk} variant="secondary">{perk}</Badge>)}
             </div>

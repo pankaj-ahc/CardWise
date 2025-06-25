@@ -139,8 +139,8 @@ export default function BillsPage() {
                             )}
                         </div>
                         <div>
-                            <div className="font-medium">{bill.cardName}</div>
-                            {bill.last4Digits && <div className="text-sm text-muted-foreground">•••• {bill.last4Digits}</div>}
+                            <div className="font-medium">{`${bill.cardName} (${bill.bankName})`}</div>
+                            {bill.last4Digits && <div className="text-sm text-muted-foreground">•••• {bill.last4Digits.slice(-4)}</div>}
                         </div>
                       </div>
                     </TableCell>

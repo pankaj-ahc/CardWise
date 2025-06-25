@@ -77,7 +77,7 @@ export function UpcomingBills() {
               )}
             </div>
             <div className="flex-grow">
-              <p className="text-sm font-medium leading-none">{bill.cardName} ending in {bill.last4Digits}</p>
+              <p className="text-sm font-medium leading-none">{`${bill.cardName} (${bill.bankName})`} {bill.last4Digits && `ending in ${bill.last4Digits.slice(-4)}`}</p>
               <p className="text-sm text-muted-foreground">
                 Due on {format(new Date(bill.dueDate), 'MMM dd, yyyy')}
               </p>

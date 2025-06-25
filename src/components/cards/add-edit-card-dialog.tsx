@@ -101,7 +101,7 @@ export const cardVariantList: readonly CardVariantInfo[] = [
 const cardFormSchema = z.object({
   cardName: z.string().min(2, { message: 'Card name must be at least 2 characters.' }),
   bankName: z.string().min(2, { message: 'Bank name must be at least 2 characters.' }),
-  last4Digits: z.string().optional(),
+  last4Digits: z.string().max(4, { message: 'Cannot be more than 4 characters.' }).optional(),
   cardVariant: z.enum(CARD_VARIANTS),
   dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
   statementDate: z.preprocess(
@@ -210,9 +210,14 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       }
     }
 
+    const saveData = { ...data };
+    if (saveData.last4Digits) {
+        saveData.last4Digits = saveData.last4Digits.slice(-4);
+    }
+
     onSave({
       id: card?.id,
-      ...data,
+      ...saveData,
       color: finalColor,
     });
     onOpenChange(false);
@@ -228,9 +233,14 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       <DialogContent
         className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto"
         onPointerDownOutside={(e) => {
-          e.preventDefault();
+           // Prevent closing on clicking outside the content
+           const target = e.target as HTMLElement;
+           if (target.closest('[data-radix-popper-content-wrapper]')) {
+               e.preventDefault();
+           }
         }}
         onEscapeKeyDown={(e) => {
+          // Prevent closing with the Escape key
           e.preventDefault();
         }}
       >
