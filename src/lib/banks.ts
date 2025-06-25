@@ -97,6 +97,17 @@ export const getBankAbbreviation = (bankName: string): string => {
     if (match) {
       return match[1];
     }
+
+    // Special cases for banks where simple initialism doesn't work well
+    if (bankName === 'State Bank of India') {
+        return 'SBI';
+    }
+    if (bankName === 'Union Bank of India') {
+        return 'UBI';
+    }
+    if (bankName === 'Central Bank of India') {
+        return 'CBI';
+    }
   
     // Create abbreviation from initials for multi-word names
     const words = bankName.split(' ');
