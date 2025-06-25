@@ -4,9 +4,14 @@
   "description": "Manage your credit card bills with ease.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#E3F2FD",
+  "background_color": "#F0F8FE",
   "theme_color": "#4285F4",
   "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
     {
       "src": "https://placehold.co/192x192.png",
       "sizes": "192x192",

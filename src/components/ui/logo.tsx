@@ -10,7 +10,6 @@ export const Logo = ({ className }: { className?: string }) => (
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="h-full w-auto"
-      data-ai-hint="credit card checkmark"
     >
       <rect x="2" y="5" width="20" height="14" rx="3" className="stroke-primary" strokeWidth="2"/>
       <path d="M8 12l2.5 2.5L16 9" className="stroke-accent" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
