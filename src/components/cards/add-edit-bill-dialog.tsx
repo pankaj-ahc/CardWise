@@ -47,7 +47,7 @@ export type BillFormValues = z.infer<typeof billFormSchema>;
 interface AddEditBillDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (bill: BillFormValues & { id?: string }) => void;
+  onSave: (bill: BillFormValues & { id?: string }) => Promise<void>;
   bill?: Bill & { cardId?: string };
   cards: CardData[];
   cardId?: string;
@@ -56,6 +56,7 @@ interface AddEditBillDialogProps {
 export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, cardId }: AddEditBillDialogProps) {
   const { currency } = useSettings();
   const [currentBill, setCurrentBill] = useState(bill);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
@@ -185,12 +186,16 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   };
 
 
-  function onSubmit(data: BillFormValues) {
-    onSave({
-      id: currentBill?.id,
-      ...data,
-    });
-    onOpenChange(false);
+  async function onSubmit(data: BillFormValues) {
+    setIsSaving(true);
+    try {
+      await onSave({
+        id: currentBill?.id,
+        ...data,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const title = currentBill?.id ? 'Edit Bill' : 'Add New Bill';
@@ -243,6 +248,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                             type="button"
                             onClick={() => handleMonthChange('prev')}
                             className="h-9 w-9"
+                            disabled={!form.getValues('cardId')}
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
@@ -253,6 +259,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                             type="button"
                             onClick={() => handleMonthChange('next')}
                             className="h-9 w-9"
+                            disabled={!form.getValues('cardId')}
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -334,7 +341,12 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Bill</Button>
+               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? 'Saving...' : currentBill?.id ? 'Update Bill' : 'Save Bill'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

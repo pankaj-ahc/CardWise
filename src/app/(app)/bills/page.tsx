@@ -26,12 +26,14 @@ import {
 import { useSettings } from '@/contexts/settings-context';
 import { getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 type BillWithCard = Bill & { cardId: string; cardName: string; last4Digits?: string; bankName: string; color: string; };
 
 export default function BillsPage() {
   const { cards, addBill, updateBill, toggleBillPaidStatus, deleteBill, loading } = useCards();
   const { currency } = useSettings();
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
   const [deletingBillInfo, setDeletingBillInfo] = useState<{ cardId: string; billId: string } | null>(null);
@@ -73,19 +75,24 @@ export default function BillsPage() {
     setIsDialogOpen(true);
   }
 
-  const handleSaveBill = (data: BillFormValues & { id?: string }) => {
+  const handleSaveBill = async (data: BillFormValues & { id?: string }) => {
     const { id, cardId } = data;
     if (!cardId) return;
   
     const { id: _id, ...billData } = data;
   
-    if (id) {
-      updateBill(cardId, id, billData);
+    const isEditing = !!id;
+
+    if (isEditing) {
+      await updateBill(cardId, id, billData);
     } else {
-      addBill(cardId, billData);
+      await addBill(cardId, billData);
     }
-    setIsDialogOpen(false);
-    setEditingBill(undefined);
+
+    toast({
+        title: `Bill ${isEditing ? 'updated' : 'saved'}`,
+        description: `Your bill for ${data.month} has been successfully ${isEditing ? 'updated' : 'saved'}.`,
+    })
   };
 
   const handleCloseDialog = () => {

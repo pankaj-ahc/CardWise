@@ -24,6 +24,7 @@ import {
 import { format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface BillsSectionProps {
     cardId: string;
@@ -33,19 +34,25 @@ interface BillsSectionProps {
 export function BillsSection({ cardId, bills }: BillsSectionProps) {
     const { cards, addBill, updateBill, deleteBill } = useCards();
     const { currency } = useSettings();
+    const { toast } = useToast();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingBill, setEditingBill] = useState<(Bill & { cardId: string; }) | undefined>(undefined);
     const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
 
-    const handleSaveBill = (data: BillFormValues & { id?: string }) => {
+    const handleSaveBill = async (data: BillFormValues & { id?: string }) => {
         const { id, ...billData } = data;
-        if (id) {
-            updateBill(cardId, id, billData);
+        const isEditing = !!id;
+
+        if (isEditing) {
+            await updateBill(cardId, id, billData);
         } else {
-            addBill(cardId, billData);
+            await addBill(cardId, billData);
         }
-        setEditingBill(undefined);
-        setIsDialogOpen(false);
+        
+        toast({
+            title: `Bill ${isEditing ? 'updated' : 'saved'}`,
+            description: `Your bill for ${data.month} has been successfully ${isEditing ? 'updated' : 'saved'}.`,
+        });
     };
 
     const openEditDialog = (bill: Bill) => {
