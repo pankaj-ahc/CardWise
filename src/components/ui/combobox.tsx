@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
+  CommandGroup,
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
@@ -38,9 +38,9 @@ export function Combobox({
   options,
   value,
   onChange,
-  placeholder = "Select or type a bank",
-  searchPlaceholder = "Search bank...",
-  emptyPlaceholder = "Bank not found. You can add a new one.",
+  placeholder = "Select an option",
+  searchPlaceholder = "Search...",
+  emptyPlaceholder = "No results found.",
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -66,14 +66,14 @@ export function Combobox({
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command
           filter={(value, search) => {
+            // Allow custom values by checking if the search term is a substring
             if (value.toLowerCase().includes(search.toLowerCase())) return 1
             return 0
           }}
         >
           <CommandInput
             placeholder={searchPlaceholder}
-            value={value}
-            onValueChange={onChange}
+            onValueChange={onChange} // Allow typing a custom value
           />
           <CommandList>
             <CommandEmpty>{emptyPlaceholder}</CommandEmpty>
@@ -83,7 +83,9 @@ export function Combobox({
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    onChange(currentValue)
+                    // When an item is selected from the list, update the form
+                    // `currentValue` is the `value` prop of the selected `CommandItem`
+                    onChange(currentValue === value ? "" : currentValue)
                     setOpen(false)
                   }}
                 >
@@ -105,4 +107,3 @@ export function Combobox({
     </Popover>
   )
 }
-

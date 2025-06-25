@@ -227,7 +227,18 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto"
-        onInteractOutside={(e) => {
+        onPointerDownOutside={(e) => {
+          const target = e.target as HTMLElement;
+          // Check if the click is inside the Combobox's popover, which uses cmdk.
+          if (target.closest('[cmdk-root]')) {
+            // If it is, do nothing. Let the event propagate so the combobox can be used.
+            return;
+          }
+          // For any other outside click, prevent the dialog from closing.
+          e.preventDefault();
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing on escape key.
           e.preventDefault();
         }}
       >
