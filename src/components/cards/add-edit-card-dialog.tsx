@@ -122,13 +122,14 @@ export type CardFormValues = z.infer<typeof cardFormSchema>;
 interface AddEditCardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (card: CardFormValues & { id?: string; color: string; }) => void;
+  onSave: (card: CardFormValues & { id?: string; color: string; }) => Promise<void>;
   card?: CardData;
 }
 
 export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditCardDialogProps) {
   const { currency } = useSettings();
   const [perkInput, setPerkInput] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<CardFormValues>({
     resolver: zodResolver(cardFormSchema),
@@ -194,33 +195,42 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
   };
 
 
-  function onSubmit(data: CardFormValues) {
-    const isKnownBank = popularBanks.some(b => b.name.toLowerCase() === data.bankName.toLowerCase());
-    
-    let finalColor: string;
+  async function onSubmit(data: CardFormValues) {
+    setIsSaving(true);
+    try {
+      const isKnownBank = popularBanks.some(b => b.name.toLowerCase() === data.bankName.toLowerCase());
+      
+      let finalColor: string;
 
-    if (isKnownBank) {
-      finalColor = 'hsl(217, 89%, 61%)';
-    } else {
-      if (card && card.bankName === data.bankName && card.color) {
-        finalColor = card.color;
+      if (isKnownBank) {
+        finalColor = 'hsl(217, 89%, 61%)';
       } else {
-        const hue = Math.floor(Math.random() * 360);
-        finalColor = `hsl(${hue}, 70%, 50%)`;
+        if (card && card.bankName === data.bankName && card.color) {
+          finalColor = card.color;
+        } else {
+          const hue = Math.floor(Math.random() * 360);
+          finalColor = `hsl(${hue}, 70%, 50%)`;
+        }
       }
-    }
-    
-    const saveData = {
-        ...data,
-        last4Digits: data.last4Digits ? data.last4Digits.slice(-4) : '',
-    };
+      
+      const saveData = {
+          ...data,
+          last4Digits: data.last4Digits ? data.last4Digits.slice(-4) : '',
+      };
 
-    onSave({
-      id: card?.id,
-      ...saveData,
-      color: finalColor,
-    });
-    onOpenChange(false);
+      await onSave({
+        id: card?.id,
+        ...saveData,
+        color: finalColor,
+      });
+
+      if (!card?.id) {
+          form.reset();
+          setPerkInput('');
+      }
+    } finally {
+        setIsSaving(false);
+    }
   }
   
   const title = card ? 'Edit Card' : 'Add New Card';
@@ -435,7 +445,9 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-              <Button type="submit">Save card</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? 'Saving...' : card?.id ? 'Update Card' : 'Save Card'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

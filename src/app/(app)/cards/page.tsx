@@ -9,21 +9,27 @@ import { AddEditCardDialog, type CardFormValues } from '@/components/cards/add-e
 import { type CardData } from '@/lib/types';
 import { useCards } from '@/contexts/card-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CardsPage() {
   const { cards, addCard, updateCard, deleteCard, loading } = useCards();
+  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CardData | undefined>(undefined);
 
-  const handleSaveCard = (data: CardFormValues & { id?: string; color: string }) => {
+  const handleSaveCard = async (data: CardFormValues & { id?: string; color: string }) => {
     const { id, ...cardData } = data;
-    if (id) {
-      updateCard(id, cardData);
+    const isEditing = !!id;
+    if (isEditing) {
+      await updateCard(id, cardData);
     } else {
-      addCard(cardData);
+      await addCard(cardData);
     }
-    setEditingCard(undefined);
-    setIsDialogOpen(false);
+    
+    toast({
+        title: `Card ${isEditing ? 'updated' : 'saved'}`,
+        description: `Your card "${data.cardName}" has been successfully ${isEditing ? 'updated' : 'saved'}.`,
+    });
   };
 
   const openEditDialog = (card: CardData) => {
@@ -37,7 +43,7 @@ export default function CardsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 pt-14 md:p-6 md:pt-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">My Cards</h2>
         <div className="flex items-center space-x-2">
