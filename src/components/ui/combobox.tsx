@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -86,6 +87,7 @@ export function Combobox({
                   key={option.value}
                   value={option.value}
                   onSelect={() => handleSelect(option.value)}
+                  onClick={() => handleSelect(option.value)}
                 >
                   <Check
                     className={cn(

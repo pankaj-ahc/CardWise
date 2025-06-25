@@ -87,6 +87,8 @@ export interface CardVariantInfo {
 
 export const cardVariantList: readonly CardVariantInfo[] = [
     { name: 'Visa', logo: VisaLogo },
+    { name: 'Visa Signature', logo: VisaLogo },
+    { name: 'Visa Infinite', logo: VisaLogo },
     { name: 'Mastercard', logo: MastercardLogo },
     { name: 'American Express', logo: AmericanExpressLogo },
     { name: 'Discover', logo: DiscoverLogo },
@@ -102,7 +104,15 @@ const cardFormSchema = z.object({
   last4Digits: z.string().optional(),
   cardVariant: z.enum(CARD_VARIANTS),
   dueDate: z.coerce.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}),
+  statementDate: z.preprocess(
+      (val) => String(val).trim() === '' ? undefined : Number(val),
+      z.number().min(1).max(31, { message: "Must be a valid day of the month (1-31)."}).optional()
+  ),
   annualFee: z.coerce.number().min(0),
+  creditLimit: z.preprocess(
+      (val) => String(val).trim() === '' ? undefined : Number(val),
+      z.number().min(0).optional()
+  ),
   perks: z.array(z.string()).optional(),
   extraInfo: z.string().optional(),
 });
@@ -128,7 +138,9 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       last4Digits: '',
       cardVariant: 'Other',
       dueDate: 1,
+      statementDate: undefined,
       annualFee: 0,
+      creditLimit: undefined,
       perks: [],
       extraInfo: '',
     },
@@ -145,7 +157,9 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           last4Digits: card.last4Digits || '',
           cardVariant: card.cardVariant || 'Other',
           dueDate: card.dueDate,
+          statementDate: card.statementDate,
           annualFee: card.annualFee,
+          creditLimit: card.creditLimit,
           perks: card.perks || [],
           extraInfo: card.extraInfo || '',
         });
@@ -156,7 +170,9 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
           last4Digits: '',
           cardVariant: 'Other',
           dueDate: 1,
+          statementDate: undefined,
           annualFee: 0,
+          creditLimit: undefined,
           perks: [],
           extraInfo: '',
         });
@@ -209,7 +225,11 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -291,32 +311,62 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                 )}
               />
              </div>
-            <FormField
-              control={form.control}
-              name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Due Date (Day of Month)</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="annualFee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Annual Fee ({currency})</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Due Date (Day)</FormLabel>
+                    <FormControl>
+                        <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="statementDate"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Statement Date (Day)</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="Optional" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="annualFee"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Annual Fee ({currency})</FormLabel>
+                    <FormControl>
+                        <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="creditLimit"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Credit Limit ({currency})</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="Optional" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
             <FormField
               control={form.control}
               name="perks"

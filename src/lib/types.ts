@@ -1,3 +1,4 @@
+
 export interface Bill {
   id: string;
   month: string;
@@ -16,7 +17,7 @@ export interface SpendTracker {
   startDate: string;
 }
 
-export const CARD_VARIANTS = ['Visa', 'Mastercard', 'American Express', 'Discover', 'RuPay', 'Maestro', 'Other'] as const;
+export const CARD_VARIANTS = ['Visa', 'Visa Signature', 'Visa Infinite', 'Mastercard', 'American Express', 'Discover', 'RuPay', 'Maestro', 'Other'] as const;
 export type CardVariant = typeof CARD_VARIANTS[number];
 
 export interface CardData {
@@ -26,7 +27,9 @@ export interface CardData {
   bankName: string;
   cardVariant: CardVariant;
   dueDate: number; // Day of the month
+  statementDate?: number; // Day of the month
   annualFee: number;
+  creditLimit?: number;
   billingCycleStartMonth: string;
   feeWaiverCriteria: string;
   perks: string[];
