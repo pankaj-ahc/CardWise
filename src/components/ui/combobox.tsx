@@ -44,17 +44,6 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
-  const handleSelect = (currentValue: string) => {
-    // When an item is selected from the list, update the form value
-    onChange(currentValue)
-    setOpen(false)
-  }
-
-  // When the user types in the input, update the form value
-  const handleInputChange = (search: string) => {
-    onChange(search)
-  }
-
   const selectedLabel = options.find((option) => option.value.toLowerCase() === value?.toLowerCase())?.label ?? value
 
   return (
@@ -76,8 +65,6 @@ export function Combobox({
         <Command>
           <CommandInput
             placeholder={searchPlaceholder}
-            value={value || ''}
-            onValueChange={handleInputChange}
           />
           <CommandList>
             <CommandEmpty>{emptyPlaceholder}</CommandEmpty>
@@ -86,7 +73,10 @@ export function Combobox({
                 <CommandItem
                   key={option.value}
                   value={option.value}
-                  onSelect={handleSelect}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue)
+                    setOpen(false)
+                  }}
                 >
                   <Check
                     className={cn(

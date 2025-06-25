@@ -224,11 +224,23 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
   const bankOptions = popularBanks.map(bank => ({ value: bank.name, label: bank.name }));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      // Only allow closing via the 'X' button or save button
+      if (!isOpen) {
+        return;
+      }
+      onOpenChange(isOpen);
+    }}>
       <DialogContent
         className="sm:max-w-[425px] max-h-[90dvh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => {
+          // We allow escape if the combobox is open, to close it
+          const isComboboxOpen = document.querySelector('[data-radix-popper-content-wrapper][style*="--radix-popper-transform-origin"]');
+          if (!isComboboxOpen) {
+            e.preventDefault();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -261,7 +273,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                         value={field.value}
                         onChange={field.onChange}
                         placeholder="Select a bank"
-                        searchPlaceholder="Search bank or type custom..."
+                        searchPlaceholder="Search bank..."
                         emptyPlaceholder="Bank not found."
                       />
                    </FormControl>
@@ -314,19 +326,6 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
             <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
-                name="dueDate"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Due Date (Day)</FormLabel>
-                    <FormControl>
-                        <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
                 name="statementDate"
                 render={({ field }) => (
                     <FormItem>
@@ -338,14 +337,12 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                     </FormItem>
                 )}
                 />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
-                name="annualFee"
+                name="dueDate"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Annual Fee ({currency})</FormLabel>
+                    <FormLabel>Due Date (Day)</FormLabel>
                     <FormControl>
                         <Input type="number" {...field} />
                     </FormControl>
@@ -353,6 +350,8 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                     </FormItem>
                 )}
                 />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
                 name="creditLimit"
@@ -361,6 +360,19 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                     <FormLabel>Credit Limit ({currency})</FormLabel>
                     <FormControl>
                         <Input type="number" placeholder="Optional" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="annualFee"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Annual Fee ({currency})</FormLabel>
+                    <FormControl>
+                        <Input type="number" {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -425,6 +437,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
               )}
             />
             <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
               <Button type="submit">Save card</Button>
             </DialogFooter>
           </form>
