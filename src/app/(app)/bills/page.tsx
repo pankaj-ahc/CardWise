@@ -207,7 +207,7 @@ export default function BillsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-3 pt-16 md:p-8 md:pt-6">
+    <div className="flex-1 space-y-4 p-4 pt-14 md:p-6 md:pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Manage Bills</h2>
         <Button onClick={handleOpenAddDialog}>
