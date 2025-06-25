@@ -30,7 +30,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { format, addMonths, subMonths } from 'date-fns';
 import { type Bill, type CardData } from '@/lib/types';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSettings } from '@/contexts/settings-context';
 import { useToast } from '@/hooks/use-toast';
@@ -59,6 +59,8 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   const { currency } = useSettings();
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  // This state tracks the ID of the bill currently being edited.
+  // It's the source of truth for whether we are in "add" or "edit" mode.
   const [activeBillId, setActiveBillId] = useState<string | undefined>();
 
   const form = useForm<BillFormValues>({
@@ -73,14 +75,16 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   });
 
   const selectedCardId = form.watch('cardId');
+  const monthValue = form.watch('month');
   const dueDateValue = form.watch('dueDate');
 
-  // Effect to initialize or reset the dialog's state when it opens or the initial `bill` prop changes.
+  // Effect to initialize or reset the dialog when it opens or the initial `bill` prop changes.
   useEffect(() => {
     if (open) {
       const initialBill = bill;
       setActiveBillId(initialBill?.id);
       if (initialBill) {
+        // Case 1: Editing a specific bill passed in as a prop (e.g., from "Edit" button)
         form.reset({
           cardId: initialBill.cardId,
           month: initialBill.month,
@@ -89,6 +93,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
           paid: initialBill.paid,
         });
       } else {
+        // Case 2: Adding a new bill
         form.reset({
           cardId: cardId || '',
           month: format(subMonths(new Date(), 1), 'MMMM yyyy'),
@@ -98,22 +103,34 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
         });
       }
     }
-  }, [bill, open, form, cardId]);
+  }, [bill, open, form.reset, cardId]); // form.reset is stable
 
-  // Derived memo to find the bill that matches the current form selection
-  const matchedBill = useMemo(() => {
-    const monthValue = form.getValues('month');
-    if (!selectedCardId || !monthValue) return undefined;
-    const card = cards.find(c => c.id === selectedCardId);
-    return card?.bills.find(b => b.month === monthValue);
-  }, [selectedCardId, form, cards]);
-
-
-  // Effect to automatically switch to "edit" mode if a bill for the selected month/card exists.
+  // Effect to synchronize the month field when the due date is changed manually.
+  // This helps keep the form consistent.
   useEffect(() => {
-    if (!open) return;
-    
+    if (dueDateValue && open) {
+      const statementMonthDate = subMonths(dueDateValue, 1);
+      const statementMonthString = format(statementMonthDate, 'MMMM yyyy');
+      if (form.getValues('month') !== statementMonthString) {
+        form.setValue('month', statementMonthString, { shouldValidate: true });
+      }
+    }
+  }, [dueDateValue, open, form.getValues, form.setValue]); // getValues/setValue are stable
+
+
+  // This effect is the core logic for switching between "add" and "edit" modes dynamically.
+  // It runs whenever the selected card or month changes.
+  useEffect(() => {
+    // Don't run this logic if the dialog is closed or if no card is selected.
+    if (!open || !selectedCardId || !monthValue) {
+        return;
+    }
+
+    const card = cards.find(c => c.id === selectedCardId);
+    const matchedBill = card?.bills.find(b => b.month === monthValue);
+
     if (matchedBill) {
+      // A bill for this month already exists. Switch to edit mode for THAT bill.
       if (activeBillId !== matchedBill.id) {
         setActiveBillId(matchedBill.id);
         form.reset({
@@ -125,23 +142,20 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
         });
       }
     } else {
-      setActiveBillId(undefined);
+      // No bill exists for the selected month.
+      // If we were previously editing a bill, switch to "add" mode.
+      if (activeBillId) {
+        setActiveBillId(undefined);
+        // We keep the selected card and month, but reset the bill-specific fields.
+        form.setValue('amount', 0);
+        form.setValue('paid', false);
+        // Note: We don't reset dueDate here, as it's linked to the month via the MonthSelector.
+      }
     }
-  }, [matchedBill, open, form, activeBillId, selectedCardId]);
-
-  // Effect to synchronize the month field when the due date is changed manually.
-  useEffect(() => {
-    if (dueDateValue && open) {
-        const statementMonthDate = subMonths(dueDateValue, 1);
-        const statementMonthString = format(statementMonthDate, 'MMMM yyyy');
-        if (form.getValues('month') !== statementMonthString) {
-            form.setValue('month', statementMonthString, { shouldValidate: true });
-        }
-    }
-  }, [dueDateValue, form, open]);
+  }, [selectedCardId, monthValue, open, cards, activeBillId, form.reset, form.setValue]);
 
 
-  async function onSubmit(data: BillFormValues) {
+  const onSubmit = useCallback(async (data: BillFormValues) => {
     setIsSaving(true);
     const isEditing = !!activeBillId;
     try {
@@ -159,11 +173,10 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
       if (!isEditing) {
           const currentDueDate = form.getValues('dueDate');
           const newDueDate = addMonths(currentDueDate, 1);
-          const newStatementDate = subMonths(newDueDate, 1);
           
           form.reset({
               ...form.getValues(), // keep cardId
-              month: format(newStatementDate, 'MMMM yyyy'),
+              month: format(subMonths(newDueDate, 1), 'MMMM yyyy'),
               dueDate: newDueDate,
               amount: 0,
               paid: false,
@@ -171,11 +184,10 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
           setActiveBillId(undefined); // Ensure we are in "add" mode
           form.setFocus('amount');
       }
-
     } finally {
       setIsSaving(false);
     }
-  }
+  }, [onSave, activeBillId, form, toast]);
 
   const title = activeBillId ? 'Edit Bill' : 'Add New Bill';
   const description = activeBillId ? 'A bill for this month already exists. You are editing it.' : 'Add a new bill record for a card.';
@@ -316,4 +328,3 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
     </Dialog>
   );
 }
-
