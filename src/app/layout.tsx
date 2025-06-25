@@ -26,7 +26,9 @@ export const metadata: Metadata = {
     telephone: false,
   },
   icons: {
-    apple: '/icons/icon-192x192.png',
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: 'https://placehold.co/180x180.png',
   },
 };
 
@@ -57,3 +59,4 @@ export default function RootLayout({
     </html>
   );
 }
+
