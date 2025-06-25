@@ -17,11 +17,11 @@ export default function AppLayout({
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 md:hidden">
+            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
+              <SidebarTrigger />
               <div className="flex items-center gap-2">
                   <Logo className="h-8 w-auto" />
               </div>
-              <SidebarTrigger />
             </header>
             <div className="min-h-screen">
               {children}
