@@ -82,7 +82,7 @@ export default function CardDetailLayout({
   const activeTab = pathname.endsWith('/trackers') ? 'trackers' : 'bills';
 
   return (
-    <div className="flex-1 space-y-4 p-3 pt-4 md:p-8 md:pt-6">
+    <div className="flex-1 space-y-4 p-3 pt-16 md:p-8 md:pt-6">
         <div className="flex items-center justify-between space-y-2">
             <div>
                 <Button variant="outline" size="sm" asChild>

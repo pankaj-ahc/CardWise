@@ -59,7 +59,7 @@ function CardDetailPageContent() {
 
   if (loading || !card) {
     return (
-      <div className="flex-1 space-y-4 p-3 pt-4 md:p-8 md:pt-6">
+      <div className="flex-1 space-y-4 p-3 pt-16 md:p-8 md:pt-6">
         <div className="flex items-center justify-between">
             <Skeleton className="h-9 w-32" />
             <div className="flex items-center space-x-2">
@@ -108,7 +108,7 @@ function CardDetailPageContent() {
   };
   
   return (
-    <div className="flex-1 space-y-4 p-3 pt-4 md:p-8 md:pt-6">
+    <div className="flex-1 space-y-4 p-3 pt-16 md:p-8 md:pt-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
           <Button variant="outline" size="sm" asChild>
@@ -157,8 +157,8 @@ function CardDetailPageContent() {
             )}
           </div>
           <div className="flex-grow">
-            <CardTitle className="text-2xl font-headline">{`${card.cardName} (${getBankAbbreviation(card.bankName)})`}</CardTitle>
-            <CardDescription>{card.last4Digits && `•••• ${card.last4Digits.slice(-4)}`}</CardDescription>
+            <CardTitle className="text-2xl font-headline">{card.cardName}</CardTitle>
+            <CardDescription>{card.bankName}{card.last4Digits && ` •••• ${card.last4Digits.slice(-4)}`}</CardDescription>
             <div className="mt-2 flex flex-wrap gap-2">
               {card.perks.map(perk => <Badge key={perk} variant="secondary">{perk}</Badge>)}
             </div>
