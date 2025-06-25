@@ -8,6 +8,15 @@ import { format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
 import { getBankAbbreviation } from '@/lib/banks';
 
+const chartColors = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+];
+
+
 export function ExpenseChart() {
   const { cards } = useCards();
   const { currency } = useSettings();
@@ -31,8 +40,7 @@ export function ExpenseChart() {
           monthKey: format(new Date(bill.dueDate), 'yyyy-MM'),
           monthLabel: format(new Date(bill.dueDate), 'MMM yy'),
           cardName: `${card.cardName} (${getBankAbbreviation(card.bankName)})`,
-          amount: bill.amount,
-          color: card.color
+          amount: bill.amount
       }))
   ).reduce((acc, { monthKey, monthLabel, cardName, amount }) => {
       if (!acc[monthKey]) {
@@ -88,18 +96,22 @@ export function ExpenseChart() {
                     }}
                 />
                 <Legend onClick={handleLegendClick} formatter={formatLegend} />
-                {cards.map((card) => (
-                    <Line 
-                        key={card.id} 
-                        type="monotone" 
-                        dataKey={`${card.cardName} (${getBankAbbreviation(card.bankName)})`} 
-                        stroke={card.color}
-                        strokeWidth={2}
-                        dot={{ r: 4, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                        activeDot={{ r: 6, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                        hide={!!hiddenCards[`${card.cardName} (${getBankAbbreviation(card.bankName)})`]}
-                    />
-                ))}
+                {cards.map((card, index) => {
+                    const color = chartColors[index % chartColors.length];
+                    const cardDataKey = `${card.cardName} (${getBankAbbreviation(card.bankName)})`;
+                    return (
+                        <Line 
+                            key={card.id} 
+                            type="monotone" 
+                            dataKey={cardDataKey} 
+                            stroke={color}
+                            strokeWidth={2}
+                            dot={{ r: 4, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                            activeDot={{ r: 6, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                            hide={!!hiddenCards[cardDataKey]}
+                        />
+                    )
+                })}
             </LineChart>
         </ResponsiveContainer>
       </CardContent>
