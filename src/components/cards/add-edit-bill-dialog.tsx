@@ -213,7 +213,6 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                             size="icon"
                             type="button"
                             onClick={() => handleMonthChange('prev')}
-                            disabled={!selectedCardId}
                             className="h-9 w-9"
                         >
                             <ChevronLeft className="h-4 w-4" />
@@ -224,7 +223,6 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                             size="icon"
                             type="button"
                             onClick={() => handleMonthChange('next')}
-                            disabled={!selectedCardId}
                             className="h-9 w-9"
                         >
                             <ChevronRight className="h-4 w-4" />
