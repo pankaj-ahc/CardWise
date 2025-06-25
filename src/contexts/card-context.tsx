@@ -32,8 +32,8 @@ const convertTimestampsToISO = (data: any): any => {
 interface CardContextType {
   cards: CardData[];
   loading: boolean;
-  addCard: (data: CardFormValues) => Promise<void>;
-  updateCard: (id: string, data: Partial<CardFormValues>) => Promise<void>;
+  addCard: (data: CardFormValues & { color: string }) => Promise<void>;
+  updateCard: (id: string, data: Partial<CardFormValues & { color?: string }>) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
   getCard: (id: string) => CardData | undefined;
   addBill: (cardId: string, data: BillFormValues) => Promise<void>;
@@ -84,10 +84,18 @@ export function CardProvider({ children }: { children: ReactNode }) {
 
   const getCard = (id: string) => cards.find(c => c.id === id);
 
-  const addCard = async (data: CardFormValues) => {
+  const addCard = async (data: CardFormValues & { color: string }) => {
       if (!user) return;
+
+      const cardDataForFirestore: { [key: string]: any } = { ...data };
+      Object.keys(cardDataForFirestore).forEach(key => {
+        if (cardDataForFirestore[key] === undefined) {
+          delete cardDataForFirestore[key];
+        }
+      });
+
       const newCard: Omit<CardData, 'id'> = {
-          ...data,
+          ...(cardDataForFirestore as CardFormValues & { color: string }),
           perks: data.perks || [],
           bills: [],
           spendTrackers: [],
@@ -99,10 +107,18 @@ export function CardProvider({ children }: { children: ReactNode }) {
       await fetchCards();
   };
 
-  const updateCard = async (id: string, data: Partial<CardFormValues>) => {
+  const updateCard = async (id: string, data: Partial<CardFormValues & { color?: string }>) => {
       if (!user) return;
+
+      const updateDataForFirestore: { [key: string]: any } = { ...data };
+      Object.keys(updateDataForFirestore).forEach(key => {
+        if (updateDataForFirestore[key] === undefined) {
+          delete updateDataForFirestore[key];
+        }
+      });
+      
       const cardDocRef = doc(db, 'users', user.uid, 'cards', id);
-      await updateDoc(cardDocRef, data);
+      await updateDoc(cardDocRef, updateDataForFirestore);
       await fetchCards();
   };
 

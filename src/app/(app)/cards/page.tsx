@@ -15,7 +15,7 @@ export default function CardsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CardData | undefined>(undefined);
 
-  const handleSaveCard = (data: CardFormValues & { id?: string }) => {
+  const handleSaveCard = (data: CardFormValues & { id?: string; color: string }) => {
     const { id, ...cardData } = data;
     if (id) {
       updateCard(id, cardData);

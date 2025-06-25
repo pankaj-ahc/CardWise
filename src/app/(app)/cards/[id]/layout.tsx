@@ -67,7 +67,7 @@ export default function CardDetailLayout({
   
   const bankLogo = getBankLogo(card.bankName);
 
-  const handleSaveCard = (data: CardFormValues & { id?: string }) => {
+  const handleSaveCard = (data: CardFormValues & { id?: string; color: string }) => {
     if (data.id) {
       updateCard(data.id, data);
     }

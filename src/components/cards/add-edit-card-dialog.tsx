@@ -122,7 +122,7 @@ export type CardFormValues = z.infer<typeof cardFormSchema>;
 interface AddEditCardDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (card: CardFormValues & { id?: string }) => void;
+  onSave: (card: CardFormValues & { id?: string; color: string; }) => void;
   card?: CardData;
 }
 
@@ -210,7 +210,10 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
       }
     }
     
-    const saveData = { ...data };
+    const saveData = {
+        ...data,
+        last4Digits: data.last4Digits ? data.last4Digits.slice(-4) : '',
+    };
 
     onSave({
       id: card?.id,
@@ -233,12 +236,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
            const target = e.target as HTMLElement;
            if (target.closest('[data-radix-popper-content-wrapper]')) {
                e.preventDefault();
-           } else {
-                e.preventDefault();
            }
-        }}
-        onEscapeKeyDown={(e) => {
-            e.preventDefault();
         }}
       >
         <DialogHeader>
@@ -288,7 +286,7 @@ export function AddEditCardDialog({ open, onOpenChange, onSave, card }: AddEditC
                   <FormItem>
                     <FormLabel>Last 4 Digits (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="1234" {...field} />
+                      <Input placeholder="1234" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
