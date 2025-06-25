@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -36,7 +37,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { user } = useAuth();
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -62,6 +63,12 @@ export function AppSidebar() {
     };
   }, []);
 
+  const handleMenuItemClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   const handleInstallClick = async () => {
     if (!installPrompt) {
       return;
@@ -69,12 +76,14 @@ export function AppSidebar() {
     // Show the install prompt
     await installPrompt.prompt();
     // Wait for the user to respond to the prompt
-    const { outcome } = await installPrompt.userChoice;
+    await installPrompt.userChoice;
     // We've used the prompt, and can't use it again, so clear it
     setInstallPrompt(null);
+    handleMenuItemClick();
   };
 
   const handleLogout = async () => {
+    handleMenuItemClick();
     await signOut(auth);
     router.push('/');
   };
@@ -103,6 +112,7 @@ export function AppSidebar() {
                 isActive={pathname.startsWith(item.href)}
                 tooltip={item.label}
                 asChild
+                onClick={handleMenuItemClick}
               >
                 <Link href={item.href}>
                   <item.icon />
