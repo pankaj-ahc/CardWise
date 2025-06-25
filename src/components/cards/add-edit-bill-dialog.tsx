@@ -25,7 +25,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { format, addMonths, subMonths } from 'date-fns';
@@ -33,6 +33,8 @@ import { type Bill, type CardData } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSettings } from '@/contexts/settings-context';
+import { useToast } from '@/hooks/use-toast';
+import { MonthSelector } from '@/components/ui/month-selector';
 
 const billFormSchema = z.object({
   cardId: z.string({ required_error: 'A card is required.' }).min(1, { message: 'Please select a card.' }),
@@ -57,6 +59,7 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   const { currency } = useSettings();
   const [currentBill, setCurrentBill] = useState(bill);
   const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
@@ -161,38 +164,39 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
   }, [dueDateValue, form, open]);
 
 
-  const handleMonthChange = (direction: 'next' | 'prev') => {
-    const currentMonthStr = form.getValues('month');
-    try {
-      const currentStatementDate = new Date(`1 ${currentMonthStr}`);
-      
-      if (isNaN(currentStatementDate.getTime())) {
-          console.error("Could not parse month string:", currentMonthStr);
-          return;
-      }
-
-      const newStatementDate = direction === 'next' ? addMonths(currentStatementDate, 1) : subMonths(currentStatementDate, 1);
-      
-      // Also update the due date to stay in sync
-      const currentDueDate = form.getValues('dueDate');
-      const dayOfDueDate = new Date(currentDueDate).getDate();
-      const newDueDate = new Date(newStatementDate.getFullYear(), newStatementDate.getMonth() + 1, dayOfDueDate);
-      
-      form.setValue('dueDate', newDueDate, { shouldValidate: true });
-
-    } catch (e) {
-        console.error("Error changing month:", e);
-    }
-  };
-
-
   async function onSubmit(data: BillFormValues) {
     setIsSaving(true);
+    const isEditing = !!currentBill?.id;
     try {
       await onSave({
         id: currentBill?.id,
         ...data,
       });
+
+      toast({
+        title: `Bill ${isEditing ? 'updated' : 'saved'}`,
+        description: `Your bill for ${data.month} has been successfully ${isEditing ? 'updated' : 'saved'}.`,
+      });
+
+      // If we were adding a new bill, reset the form for the next one
+      if (!isEditing) {
+          const currentDueDate = form.getValues('dueDate');
+          const currentStatementDate = subMonths(currentDueDate, 1);
+          const newStatementDate = addMonths(currentStatementDate, 1);
+          const dayOfDueDate = currentDueDate.getDate();
+          const newDueDate = new Date(newStatementDate.getFullYear(), newStatementDate.getMonth() + 1, dayOfDueDate);
+          
+          form.reset({
+              ...form.getValues(), // keep cardId
+              month: format(newStatementDate, 'MMMM yyyy'),
+              dueDate: newDueDate,
+              amount: 0,
+              paid: false,
+          });
+          setCurrentBill(undefined); // Ensure we are in "add" mode
+          form.setFocus('amount');
+      }
+
     } finally {
       setIsSaving(false);
     }
@@ -241,29 +245,13 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                 <FormItem>
                   <FormLabel>Month</FormLabel>
                   <FormControl>
-                    <div className="flex items-center justify-between rounded-md border">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            type="button"
-                            onClick={() => handleMonthChange('prev')}
-                            className="h-9 w-9"
-                            disabled={!form.getValues('cardId')}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="font-medium text-sm tabular-nums">{field.value}</span>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            type="button"
-                            onClick={() => handleMonthChange('next')}
-                            className="h-9 w-9"
-                            disabled={!form.getValues('cardId')}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
+                    <MonthSelector
+                      value={field.value}
+                      currentDate={dueDateValue}
+                      onMonthChange={(newMonth: string) => form.setValue('month', newMonth, { shouldValidate: true })}
+                      onDateChange={(newDate: Date) => form.setValue('dueDate', newDate, { shouldValidate: true })}
+                      disabled={!selectedCardId}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
