@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useCards } from '@/contexts/card-context';
 import { useSettings } from '@/contexts/settings-context';
-import { getBankLogo } from '@/lib/banks';
+import { getBankAbbreviation, getBankLogo } from '@/lib/banks';
 import { cn } from '@/lib/utils';
 
 export default function CardDetailLayout({
@@ -134,7 +134,7 @@ export default function CardDetailLayout({
                     )}
                 </div>
                 <div className="flex-grow">
-                    <CardTitle className="text-2xl font-headline">{`${card.cardName} (${card.bankName})`}</CardTitle>
+                    <CardTitle className="text-2xl font-headline">{`${card.cardName} (${getBankAbbreviation(card.bankName)})`}</CardTitle>
                     <CardDescription>{card.last4Digits && `•••• ${card.last4Digits.slice(-4)}`}</CardDescription>
                      <div className="mt-2 flex flex-wrap gap-2">
                         {card.perks.map(perk => <Badge key={perk} variant="secondary">{perk}</Badge>)}

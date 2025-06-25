@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useCards } from '@/contexts/card-context';
 import { format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
+import { getBankAbbreviation } from '@/lib/banks';
 
 export function ExpenseChart() {
   const { cards } = useCards();
@@ -27,7 +28,7 @@ export function ExpenseChart() {
           // Use 'yyyy-MM' for sorting, and create a label 'MMM yy'
           monthKey: format(new Date(bill.dueDate), 'yyyy-MM'),
           monthLabel: format(new Date(bill.dueDate), 'MMM yy'),
-          cardName: `${card.cardName} (${card.bankName})`,
+          cardName: `${card.cardName} (${getBankAbbreviation(card.bankName)})`,
           amount: bill.amount,
           color: card.color
       }))
@@ -89,12 +90,12 @@ export function ExpenseChart() {
                     <Line 
                         key={card.id} 
                         type="monotone" 
-                        dataKey={`${card.cardName} (${card.bankName})`} 
+                        dataKey={`${card.cardName} (${getBankAbbreviation(card.bankName)})`} 
                         stroke={card.color}
                         strokeWidth={2}
                         dot={{ r: 4, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
                         activeDot={{ r: 6, fill: card.color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                        hide={!!hiddenCards[`${card.cardName} (${card.bankName})`]}
+                        hide={!!hiddenCards[`${card.cardName} (${getBankAbbreviation(card.bankName)})`]}
                     />
                 ))}
             </LineChart>

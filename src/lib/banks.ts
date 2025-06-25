@@ -88,3 +88,22 @@ export const getBankLogo = (bankName: string): string | undefined => {
     const bank = popularBanks.find(b => b.name.toLowerCase() === bankName.toLowerCase());
     return bank?.logo;
 }
+
+export const getBankAbbreviation = (bankName: string): string => {
+    if (!bankName) return '';
+  
+    // Check for abbreviation in parentheses e.g. Bank of Montreal (BMO)
+    const match = bankName.match(/\(([^)]+)\)/);
+    if (match) {
+      return match[1];
+    }
+  
+    // Create abbreviation from initials for multi-word names
+    const words = bankName.split(' ');
+    if (words.length > 1) {
+      return words.map(word => word[0]).join('').toUpperCase();
+    }
+  
+    // Return the full name if it's a single word
+    return bankName;
+};
