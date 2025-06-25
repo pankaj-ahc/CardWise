@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import { signOut } from 'firebase/auth';
 import { Separator } from './ui/separator';
 import { Logo } from './ui/logo';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 
 const menuItems = [
@@ -34,6 +36,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { user } = useAuth();
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const { isMobile } = useSidebar();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -130,7 +133,7 @@ export function AppSidebar() {
             <AvatarImage src={user?.photoURL ?? "https://placehold.co/40x40.png"} alt={user?.displayName ?? "User"} data-ai-hint="user avatar" />
             <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
           </Avatar>
-          <div className="flex flex-col text-sm min-w-0">
+          <div className={cn("flex flex-col min-w-0", isMobile ? "text-base" : "text-sm")}>
             <span className="font-semibold truncate">{user?.displayName ?? 'User'}</span>
             <span className="text-muted-foreground truncate">{user?.email ?? 'user@email.com'}</span>
           </div>
