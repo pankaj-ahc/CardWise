@@ -85,7 +85,7 @@ const TrackerProgress = ({ tracker, bills }: { tracker: SpendTracker, bills: Bil
         const currentSpend = bills
             .filter(bill => {
                 const billDueDate = startOfDay(new Date(bill.dueDate));
-                return billDueDate >= currentPeriodStart && billDueDate <= currentPeriodEnd;
+                return billDueDate >= currentPeriodStart && billDueDate <= currentPeriodEnd && bill.amount > 0;
             })
             .reduce((sum, bill) => sum + bill.amount, 0);
 
@@ -124,7 +124,7 @@ const TrackerProgress = ({ tracker, bills }: { tracker: SpendTracker, bills: Bil
 
 export function CardListItem({ card, onEdit, onDelete }: CardListItemProps) {
     const { currency } = useSettings();
-    const nextBill = card.bills.find(b => !b.paid);
+    const nextBill = card.bills.find(b => !b.paid && b.amount > 0);
     const bankLogo = getBankLogo(card.bankName);
 
   return (

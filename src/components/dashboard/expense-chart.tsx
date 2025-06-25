@@ -24,7 +24,9 @@ export function ExpenseChart() {
   };
 
   const monthlyTotals = cards.flatMap(card => 
-      card.bills.map(bill => ({
+      card.bills
+      .filter(bill => bill.amount > 0)
+      .map(bill => ({
           // Use 'yyyy-MM' for sorting, and create a label 'MMM yy'
           monthKey: format(new Date(bill.dueDate), 'yyyy-MM'),
           monthLabel: format(new Date(bill.dueDate), 'MMM yy'),

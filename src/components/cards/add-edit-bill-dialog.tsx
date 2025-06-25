@@ -36,7 +36,7 @@ import { useSettings } from '@/contexts/settings-context';
 const billFormSchema = z.object({
   cardId: z.string({ required_error: 'A card is required.' }).min(1, { message: 'Please select a card.' }),
   month: z.string().min(3, { message: 'Month must be at least 3 characters long.' }),
-  amount: z.coerce.number().min(0, { message: 'Amount must be a positive number.' }),
+  amount: z.coerce.number(),
   dueDate: z.date({ required_error: 'A due date is required.' }),
   paid: z.boolean().default(false),
 });
@@ -181,6 +181,9 @@ export function AddEditBillDialog({ open, onOpenChange, onSave, bill, cards, car
                   <FormControl>
                     <Input type="number" step="0.01" {...field} />
                   </FormControl>
+                  <FormDescription>
+                    Enter a negative amount for refunds or credits.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

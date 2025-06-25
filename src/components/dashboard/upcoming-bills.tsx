@@ -27,7 +27,7 @@ export function UpcomingBills() {
 
     const sortedBills = cards.flatMap(card => 
       card.bills
-        .filter(bill => !bill.paid)
+        .filter(bill => !bill.paid && bill.amount > 0)
         .map(bill => ({ ...bill, cardName: card.cardName, last4Digits: card.last4Digits, color: card.color, bankName: card.bankName }))
     )
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());

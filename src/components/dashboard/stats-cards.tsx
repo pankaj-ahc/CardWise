@@ -25,18 +25,21 @@ export function StatsCards() {
     const now = new Date();
     const allBills = cards.flatMap(card => card.bills);
 
-    const upcomingBills = allBills.filter(bill => !bill.paid && new Date(bill.dueDate) >= now);
-    const totalOutstanding = allBills.filter(bill => !bill.paid).reduce((sum, bill) => sum + bill.amount, 0);
+    const upcomingPositiveBills = allBills.filter(bill => !bill.paid && new Date(bill.dueDate) >= now && bill.amount > 0);
+    
+    const totalOutstanding = allBills
+      .filter(bill => !bill.paid && bill.amount > 0)
+      .reduce((sum, bill) => sum + bill.amount, 0);
 
     const totalPaidThisMonth = allBills
       .filter(bill => {
-        if (!bill.paid || !bill.paymentDate) return false;
+        if (!bill.paid || !bill.paymentDate || bill.amount <= 0) return false;
         const paymentDate = new Date(bill.paymentDate);
         return paymentDate.getMonth() === now.getMonth() && paymentDate.getFullYear() === now.getFullYear();
       })
       .reduce((sum, bill) => sum + bill.amount, 0);
 
-    const cardsDueSoon = upcomingBills
+    const cardsDueSoon = upcomingPositiveBills
       .filter(bill => {
           const dueDate = new Date(bill.dueDate);
           const diffDays = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 3600 * 24));
@@ -45,7 +48,7 @@ export function StatsCards() {
       
     setStats({
         totalOutstanding,
-        upcomingBillsCount: upcomingBills.length,
+        upcomingBillsCount: upcomingPositiveBills.length,
         cardsDueSoon,
         totalPaidThisMonth,
     });

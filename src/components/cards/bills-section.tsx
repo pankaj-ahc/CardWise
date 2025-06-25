@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
 import { useSettings } from '@/contexts/settings-context';
+import { cn } from '@/lib/utils';
 
 interface BillsSectionProps {
     cardId: string;
@@ -92,11 +93,11 @@ export function BillsSection({ cardId, bills }: BillsSectionProps) {
                             {bills.length > 0 ? bills.map((bill) => (
                                 <TableRow key={bill.id}>
                                     <TableCell className="font-medium">{bill.month}</TableCell>
-                                    <TableCell>{currency}{bill.amount.toFixed(2)}</TableCell>
+                                    <TableCell className={cn(bill.amount <= 0 && "text-muted-foreground italic")}>{currency}{bill.amount.toFixed(2)}</TableCell>
                                     <TableCell>{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</TableCell>
                                     <TableCell>
-                                        <Badge variant={bill.paid ? "default" : "secondary"} className={bill.paid ? 'bg-green-500 hover:bg-green-500/90' : ''}>
-                                            {bill.paid ? 'Paid' : 'Unpaid'}
+                                        <Badge variant={bill.paid ? "default" : "secondary"} className={cn(bill.paid && "bg-green-500 hover:bg-green-500/90", bill.amount <= 0 && "bg-blue-500 hover:bg-blue-500/90")}>
+                                            {bill.paid ? 'Paid' : (bill.amount <= 0 ? 'Recorded' : 'Unpaid')}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">

@@ -145,7 +145,7 @@ export default function BillsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{bill.month}</TableCell>
-                    <TableCell>{currency}{bill.amount.toFixed(2)}</TableCell>
+                    <TableCell className={cn(bill.amount <= 0 && "text-muted-foreground italic")}>{currency}{bill.amount.toFixed(2)}</TableCell>
                     <TableCell>{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
                       <Switch

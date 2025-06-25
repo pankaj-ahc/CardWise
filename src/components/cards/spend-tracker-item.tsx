@@ -102,8 +102,8 @@ export function SpendTrackerItem({ tracker, bills, onEdit, onDelete }: SpendTrac
         const spend = bills
             .filter(bill => {
                 const billDueDate = startOfDay(new Date(bill.dueDate));
-                // Inclusive of start and end dates
-                return billDueDate >= start && billDueDate <= end;
+                // Inclusive of start and end dates, and only positive amounts
+                return billDueDate >= start && billDueDate <= end && bill.amount > 0;
             })
             .reduce((sum, bill) => sum + bill.amount, 0);
         
