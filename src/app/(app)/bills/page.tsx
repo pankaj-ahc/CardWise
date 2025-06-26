@@ -37,7 +37,8 @@ export default function BillsPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<BillWithCard | undefined>(undefined);
-  const [deletingBillInfo, setDeletingBillInfo] = useState<{ cardId: string; billId: string } | null>(null);
+  const [dialogAction, setDialogAction] = useState<'delete' | 'toggle' | null>(null);
+  const [selectedBillForAction, setSelectedBillForAction] = useState<BillWithCard | null>(null);
   const [displayedBills, setDisplayedBills] = useState<BillWithCard[]>([]);
 
   useEffect(() => {
@@ -89,11 +90,6 @@ export default function BillsPage() {
     } else {
       await addBill(cardId, billData);
     }
-
-    toast({
-        title: `Bill ${isEditing ? 'updated' : 'saved'}`,
-        description: `Your bill for ${data.month} has been successfully ${isEditing ? 'updated' : 'saved'}.`,
-    })
   };
 
   const handleCloseDialog = () => {
@@ -101,12 +97,24 @@ export default function BillsPage() {
     setEditingBill(undefined);
   }
   
-  const handleDeleteBill = () => {
-    if (deletingBillInfo) {
-      deleteBill(deletingBillInfo.cardId, deletingBillInfo.billId);
-      setDeletingBillInfo(null);
+  const handleConfirmAction = () => {
+    if (!selectedBillForAction) return;
+
+    if (dialogAction === 'delete') {
+      deleteBill(selectedBillForAction.cardId, selectedBillForAction.id);
+      toast({
+        title: "Bill Deleted",
+        description: `The bill for ${selectedBillForAction.month} has been deleted.`,
+      })
+    } else if (dialogAction === 'toggle') {
+      toggleBillPaidStatus(selectedBillForAction.cardId, selectedBillForAction.id);
+      toast({
+        title: `Bill status updated`,
+        description: `The bill for ${selectedBillForAction.month} has been marked as ${!selectedBillForAction.paid ? 'paid' : 'unpaid'}.`,
+      })
     }
   }
+
 
   const renderContent = () => {
     if (loading) {
@@ -166,7 +174,7 @@ export default function BillsPage() {
                         />
                       </TableCell>
                       <TableCell className="text-right">
-                         <AlertDialog>
+                         <AlertDialog onOpenChange={(open) => { if (!open) setSelectedBillForAction(null) }}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon">
@@ -180,7 +188,7 @@ export default function BillsPage() {
                                   </DropdownMenuItem>
                                   <AlertDialogTrigger asChild>
                                       <DropdownMenuItem 
-                                          onSelect={(e) => { e.preventDefault(); setDeletingBillInfo({ cardId: bill.cardId, billId: bill.id }); }}
+                                          onSelect={(e) => { e.preventDefault(); setDialogAction('delete'); setSelectedBillForAction(bill); }}
                                           className="text-destructive focus:text-destructive focus:bg-destructive/10"
                                       >
                                           <Trash2 className="mr-2 h-4 w-4" />
@@ -197,8 +205,8 @@ export default function BillsPage() {
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={() => setDeletingBillInfo(null)}>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDeleteBill} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleConfirmAction} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -229,7 +237,7 @@ export default function BillsPage() {
                             <div className="text-sm text-muted-foreground truncate">{bill.bankName}{bill.last4Digits && ` •••• ${bill.last4Digits.slice(-4)}`}</div>
                         </div>
                       </div>
-                      <AlertDialog>
+                      <AlertDialog onOpenChange={(open) => { if (!open) { setDialogAction(null); setSelectedBillForAction(null); }}}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" className="flex-shrink-0">
@@ -237,17 +245,19 @@ export default function BillsPage() {
                               </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toggleBillPaidStatus(bill.cardId, bill.id)}>
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                <span>{bill.paid ? 'Mark as Unpaid' : 'Mark as Paid'}</span>
-                              </DropdownMenuItem>
+                              <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDialogAction('toggle'); setSelectedBillForAction(bill); }}>
+                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                    <span>{bill.paid ? 'Mark as Unpaid' : 'Mark as Paid'}</span>
+                                  </DropdownMenuItem>
+                              </AlertDialogTrigger>
                               <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit
                               </DropdownMenuItem>
                               <AlertDialogTrigger asChild>
                                   <DropdownMenuItem 
-                                      onSelect={(e) => { e.preventDefault(); setDeletingBillInfo({ cardId: bill.cardId, billId: bill.id }); }}
+                                      onSelect={(e) => { e.preventDefault(); setDialogAction('delete'); setSelectedBillForAction(bill); }}
                                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
                                   >
                                       <Trash2 className="mr-2 h-4 w-4" />
@@ -257,16 +267,33 @@ export default function BillsPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                         <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          {dialogAction === 'toggle' ? (
+                            <>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete this bill record.
+                                  Are you sure you want to mark this bill as {selectedBillForAction?.paid ? 'unpaid' : 'paid'}?
                                 </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel onClick={() => setDeletingBillInfo(null)}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleDeleteBill} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                            </AlertDialogFooter>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleConfirmAction}>Confirm</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </>
+                          ) : (
+                            <>
+                              <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete this bill record.
+                                  </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleConfirmAction} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </>
+                          )}
                         </AlertDialogContent>
                       </AlertDialog>
                     </div>
