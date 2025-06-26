@@ -120,89 +120,178 @@ export default function BillsPage() {
 
     if (displayedBills.length > 0) {
         return (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Card</TableHead>
-                  <TableHead>Month</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Paid</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayedBills.map(bill => {
-                  const bankLogo = getBankLogo(bill.bankName);
-                  return (
-                  <TableRow key={bill.id} data-state={bill.paid ? 'inactive' : 'active'}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className={cn("rounded-lg flex items-center justify-center w-10 h-10", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Card</TableHead>
+                    <TableHead>Month</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Paid</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayedBills.map(bill => {
+                    const bankLogo = getBankLogo(bill.bankName);
+                    return (
+                    <TableRow key={bill.id} data-state={bill.paid ? 'inactive' : 'active'}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className={cn("rounded-lg flex items-center justify-center w-10 h-10", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
+                              {bankLogo ? (
+                                  <img src={bankLogo} alt={`${bill.bankName} logo`} width="32" height="32" style={{ objectFit: 'contain' }} className="w-8 h-8" />
+                              ) : (
+                                  <CreditCard className="w-6 h-6 text-white"/>
+                              )}
+                          </div>
+                          <div>
+                              <div className="font-medium">{bill.cardName}</div>
+                              <div className="text-sm text-muted-foreground">{bill.bankName}{bill.last4Digits && ` •••• ${bill.last4Digits.slice(-4)}`}</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{bill.month}</TableCell>
+                      <TableCell className={cn(bill.amount <= 0 && "text-muted-foreground italic")}>{currency}{bill.amount.toFixed(2)}</TableCell>
+                      <TableCell>{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={bill.paid}
+                          onCheckedChange={() => toggleBillPaidStatus(bill.cardId, bill.id)}
+                          aria-label="Toggle paid status"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                         <AlertDialog>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                      <MoreHorizontal className="h-4 w-4"/>
+                                  </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      Edit
+                                  </DropdownMenuItem>
+                                  <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem 
+                                          onSelect={(e) => { e.preventDefault(); setDeletingBillInfo({ cardId: bill.cardId, billId: bill.id }); }}
+                                          className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                      >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          Delete
+                                      </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete this bill record.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel onClick={() => setDeletingBillInfo(null)}>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDeleteBill} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
+                    </TableRow>
+                  )})}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-3">
+              {displayedBills.map(bill => {
+                const bankLogo = getBankLogo(bill.bankName);
+                return (
+                  <div key={bill.id} className="rounded-lg border bg-card text-card-foreground shadow-sm" data-state={bill.paid ? 'inactive' : 'active'}>
+                    <div className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className={cn("rounded-lg flex items-center justify-center w-10 h-10 flex-shrink-0", bankLogo ? "bg-card" : "")} style={!bankLogo ? { backgroundColor: bill.color } : {}}>
                             {bankLogo ? (
                                 <img src={bankLogo} alt={`${bill.bankName} logo`} width="32" height="32" style={{ objectFit: 'contain' }} className="w-8 h-8" />
                             ) : (
                                 <CreditCard className="w-6 h-6 text-white"/>
                             )}
                         </div>
-                        <div>
-                            <div className="font-medium">{bill.cardName}</div>
-                            <div className="text-sm text-muted-foreground">{bill.bankName}{bill.last4Digits && ` •••• ${bill.last4Digits.slice(-4)}`}</div>
+                        <div className="truncate">
+                            <div className="font-medium truncate">{bill.cardName}</div>
+                            <div className="text-sm text-muted-foreground truncate">{bill.bankName}{bill.last4Digits && ` •••• ${bill.last4Digits.slice(-4)}`}</div>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>{bill.month}</TableCell>
-                    <TableCell className={cn(bill.amount <= 0 && "text-muted-foreground italic")}>{currency}{bill.amount.toFixed(2)}</TableCell>
-                    <TableCell>{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</TableCell>
-                    <TableCell>
+                      <AlertDialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="flex-shrink-0">
+                                  <MoreHorizontal className="h-4 w-4"/>
+                              </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                              </DropdownMenuItem>
+                              <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem 
+                                      onSelect={(e) => { e.preventDefault(); setDeletingBillInfo({ cardId: bill.cardId, billId: bill.id }); }}
+                                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                  >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Delete
+                                  </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this bill record.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => setDeletingBillInfo(null)}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteBill} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                    <div className="px-4 pb-4 space-y-2 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Month</span>
+                        <span className="font-medium">{bill.month}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Amount</span>
+                        <span className={cn("font-medium", bill.amount <= 0 && "text-muted-foreground italic font-normal")}>{currency}{bill.amount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Due Date</span>
+                        <span className="font-medium">{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</span>
+                      </div>
+                    </div>
+                    <div className="p-4 border-t flex items-center justify-between">
+                      <div className="font-medium text-sm">Paid</div>
                       <Switch
                         checked={bill.paid}
                         onCheckedChange={() => toggleBillPaidStatus(bill.cardId, bill.id)}
                         aria-label="Toggle paid status"
                       />
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <AlertDialog>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <MoreHorizontal className="h-4 w-4"/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit
-                                </DropdownMenuItem>
-                                <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem 
-                                        onSelect={(e) => { e.preventDefault(); setDeletingBillInfo({ cardId: bill.cardId, billId: bill.id }); }}
-                                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <AlertDialogContent>
-                              <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                      This action cannot be undone. This will permanently delete this bill record.
-                                  </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                  <AlertDialogCancel onClick={() => setDeletingBillInfo(null)}>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleDeleteBill} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                              </AlertDialogFooter>
-                          </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                )})}
-              </TableBody>
-            </Table>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
         )
     }
 
@@ -214,7 +303,7 @@ export default function BillsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 pt-14 md:p-6 md:pt-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight font-headline">Manage Bills</h2>
         <Button onClick={handleOpenAddDialog}>
