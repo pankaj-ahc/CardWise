@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,6 +15,40 @@ const chartColors = [
     'hsl(var(--chart-4))',
     'hsl(var(--chart-5))',
 ];
+
+const CustomTooltip = ({ active, payload, label, currency }: any) => {
+  if (active && payload && payload.length) {
+    const total = payload.reduce((sum, item) => sum + item.value, 0);
+
+    return (
+      <div className="rounded-lg border bg-popover p-2.5 text-popover-foreground shadow-sm min-w-[12rem]">
+        <p className="font-bold mb-2 text-center">{label}</p>
+        <div className="space-y-1">
+          {payload.map((pld: any) => (
+            <div key={pld.dataKey} className="flex items-center justify-between gap-4">
+              <div className="flex items-center">
+                <span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: pld.color }}></span>
+                <span className="text-muted-foreground text-sm">{pld.name}</span>
+              </div>
+              <span className="font-semibold text-sm">{currency}{pld.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          ))}
+        </div>
+        {(payload.length > 1) && (
+          <>
+            <div className="border-t my-2" />
+            <div className="flex items-center justify-between font-bold text-sm">
+              <span>Total</span>
+              <span>{currency}{total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+};
 
 
 export function ExpenseChart() {
@@ -87,12 +122,8 @@ export function ExpenseChart() {
                     tickFormatter={(value) => `${currency}${Math.round(value as number)}`}
                 />
                 <Tooltip
-                    formatter={(value: number) => `${currency}${Math.round(value)}`}
-                    contentStyle={{
-                        backgroundColor: 'hsl(var(--popover))',
-                        borderColor: 'hsl(var(--border))',
-                        borderRadius: 'var(--radius)',
-                    }}
+                    content={<CustomTooltip currency={currency} />}
+                    cursor={{ fill: 'hsl(var(--muted))' }}
                 />
                 <Legend onClick={handleLegendClick} formatter={formatLegend} />
                 {cards.map((card, index) => {
