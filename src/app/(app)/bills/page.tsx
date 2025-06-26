@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Edit, MoreHorizontal, Trash2, CreditCard } from 'lucide-react';
+import { PlusCircle, Edit, MoreHorizontal, Trash2, CreditCard, CheckCircle2 } from 'lucide-react';
 import { useCards } from '@/contexts/card-context';
 import { type CardData, type Bill } from '@/lib/types';
 import { AddEditBillDialog, type BillFormValues } from '@/components/cards/add-edit-bill-dialog';
@@ -236,6 +237,10 @@ export default function BillsPage() {
                               </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => toggleBillPaidStatus(bill.cardId, bill.id)}>
+                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                <span>{bill.paid ? 'Mark as Unpaid' : 'Mark as Paid'}</span>
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleOpenEditDialog(bill)}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit
@@ -265,27 +270,19 @@ export default function BillsPage() {
                         </AlertDialogContent>
                       </AlertDialog>
                     </div>
-                    <div className="px-4 pb-4 space-y-2 text-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Month</span>
-                        <span className="font-medium">{bill.month}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Amount</span>
-                        <span className={cn("font-medium", bill.amount <= 0 && "text-muted-foreground italic font-normal")}>{currency}{bill.amount.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Due Date</span>
-                        <span className="font-medium">{format(new Date(bill.dueDate), 'MMM dd, yyyy')}</span>
-                      </div>
-                    </div>
-                    <div className="p-4 border-t flex items-center justify-between">
-                      <div className="font-medium text-sm">Paid</div>
-                      <Switch
-                        checked={bill.paid}
-                        onCheckedChange={() => toggleBillPaidStatus(bill.cardId, bill.id)}
-                        aria-label="Toggle paid status"
-                      />
+                     <div className="border-t p-4 grid grid-cols-3 gap-2 text-center">
+                        <div>
+                            <div className="text-xs text-muted-foreground">Month</div>
+                            <div className="text-sm font-medium truncate">{bill.month}</div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-muted-foreground">Amount</div>
+                            <div className={cn("text-sm font-medium", bill.amount <= 0 && "text-muted-foreground italic font-normal")}>{currency}{bill.amount.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div className="text-xs text-muted-foreground">Due Date</div>
+                            <div className="text-sm font-medium">{format(new Date(bill.dueDate), 'MMM dd, yy')}</div>
+                        </div>
                     </div>
                   </div>
                 )
