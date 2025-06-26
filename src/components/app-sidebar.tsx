@@ -30,7 +30,7 @@ const menuItems = [
   { href: '/cards', label: 'Cards', icon: CreditCard },
   { href: '/bills', label: 'Bills', icon: Wallet },
   { href: '/compare', label: 'Compare', icon: Scale },
-  { href: '/yearly-summary', label: 'Yearly Summary', icon: CalendarDays },
+  { href: '/yearly-summary', label: 'Bill Summary', icon: CalendarDays },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

@@ -131,7 +131,7 @@ export default function YearlySummaryPage() {
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Yearly Summary</h2>
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Bill Summary</h2>
         <Select value={selectedYear} onValueChange={setSelectedYear}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select a year" />
@@ -146,7 +146,7 @@ export default function YearlySummaryPage() {
       {loading ? renderLoading() : (
         <Card>
             <CardHeader>
-                <CardTitle>Annual Bill Summary</CardTitle>
+                <CardTitle>Bill Summary</CardTitle>
                 <CardDescription>A month-by-month breakdown of your total spend across all cards for {selectedYear}.</CardDescription>
             </CardHeader>
             <CardContent>
